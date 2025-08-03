@@ -32,8 +32,8 @@
       z-index: 1000;
       pointer-events: none;
       opacity: 0;
-      transition: all 0.3s ease;
-      transform: translateX(-50%) translateY(-50%);
+      transition: opacity 0.3s ease;
+      transform: translate(-50%, -50%);
     }
 
     .emoji-follower.active {
@@ -42,8 +42,8 @@
     }
 
     @keyframes float {
-      0%, 100% { transform: translateX(-50%) translateY(-50%) rotate(0deg); }
-      50% { transform: translateX(-50%) translateY(-60%) rotate(5deg); }
+      0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+      50% { transform: translate(-50%, -60%) rotate(5deg); }
     }
 
     header {
@@ -312,7 +312,8 @@
     <div class="header-content">
       <h1>
         <div class="logo-container">
-          <img src="./Smartshot logo.png" alt="SmartShot Logo" />
+         
+         <img src="./Smartshot logo.png" alt="SmartShot Logo" />
 
           <span class="rocket rocket-1">🚀</span>
           <span class="rocket rocket-2">🚀</span>
@@ -402,6 +403,9 @@
       const emojiFollower = document.getElementById('emojiFollower');
       const sections = document.querySelectorAll('h2');
       let currentEmoji = '🧠';
+      let isMouseMoving = false;
+      let mouseX = 0;
+      let mouseY = 0;
       
       // Emoji mapping for different sections
       const emojiMap = {
@@ -413,14 +417,14 @@
       
       // Update emoji based on scroll position
       function updateEmoji() {
-        const scrollY = window.scrollY;
+        const scrollPosition = window.scrollY + (window.innerHeight / 3);
         let activeSection = null;
         
         sections.forEach(section => {
-          const rect = section.getBoundingClientRect();
-          const sectionTop = rect.top + scrollY;
+          const sectionTop = section.offsetTop;
+          const sectionHeight = section.offsetHeight;
           
-          if (scrollY >= sectionTop - 200) {
+          if (scrollPosition >= sectionTop && scrollPosition <= sectionTop + sectionHeight) {
             activeSection = section;
           }
         });
@@ -436,33 +440,54 @@
         }
       }
       
-      // Follow mouse and update emoji
+      // Follow mouse
       document.addEventListener('mousemove', function(e) {
-        emojiFollower.style.left = e.clientX + 'px';
-        emojiFollower.style.top = e.clientY + 'px';
+        isMouseMoving = true;
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        emojiFollower.style.left = mouseX + 'px';
+        emojiFollower.style.top = mouseY + 'px';
+        
+        if (!emojiFollower.classList.contains('active')) {
+          emojiFollower.classList.add('active');
+        }
+        
+        // Reset the mouse movement flag after a short delay
+        clearTimeout(window.mouseMoveTimeout);
+        window.mouseMoveTimeout = setTimeout(() => {
+          isMouseMoving = false;
+        }, 1000);
       });
       
-      // Show/hide emoji on scroll
-      let scrollTimeout;
+      // Update emoji on scroll and show follower
       window.addEventListener('scroll', function() {
         updateEmoji();
-        emojiFollower.classList.add('active');
         
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-          emojiFollower.classList.remove('active');
+        if (!isMouseMoving) {
+          emojiFollower.style.left = (window.innerWidth - 50) + 'px';
+          emojiFollower.style.top = (window.scrollY + 50) + 'px';
+          emojiFollower.classList.add('active');
+        }
+        
+        clearTimeout(window.scrollTimeout);
+        window.scrollTimeout = setTimeout(() => {
+          if (!isMouseMoving) {
+            emojiFollower.classList.remove('active');
+          }
         }, 2000);
+      });
+      
+      // Initial update
+      updateEmoji();
+      
+      // Show emoji when mouse enters window
+      document.addEventListener('mouseenter', function() {
+        emojiFollower.classList.add('active');
       });
       
       // Hide emoji when mouse leaves window
       document.addEventListener('mouseleave', function() {
         emojiFollower.classList.remove('active');
-      });
-      
-      document.addEventListener('mouseenter', function() {
-        if (window.scrollY > 100) {
-          emojiFollower.classList.add('active');
-        }
       });
     });
   </script>
