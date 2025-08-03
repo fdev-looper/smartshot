@@ -61,9 +61,51 @@
       gap: 15px;
     }
 
+    .logo-container {
+      position: relative;
+      display: inline-block;
+    }
+
     header h1 img {
       height: 50px;
-      width: auto;
+      width: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      transition: all 0.3s ease;
+      transform-origin: center;
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    header h1:hover img {
+      transform: scale(1.5);
+      box-shadow: 0 0 20px rgba(67, 97, 238, 0.5);
+    }
+
+    .rocket {
+      position: absolute;
+      right: -30px;
+      top: -20px;
+      font-size: 24px;
+      opacity: 0;
+      transition: all 0.5s ease;
+    }
+
+    header h1:hover .rocket {
+      animation: fly 3s ease-in-out forwards;
+    }
+
+    @keyframes fly {
+      0% {
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      100% {
+        transform: translate(200px, -100px) rotate(30deg);
+        opacity: 0;
+      }
     }
 
     header p {
@@ -185,6 +227,11 @@
         background-size: auto 60%;
         opacity: 0.08;
       }
+      
+      header h1 img {
+        height: 40px;
+        width: 40px;
+      }
     }
   </style>
 </head>
@@ -193,7 +240,10 @@
   <header>
     <div class="header-content">
       <h1>
-        <img src="https://raw.githubusercontent.com/fdev-looper/smartshot/main/logo.png" alt="SmartShot Logo" />
+        <div class="logo-container">
+          <img src="https://raw.githubusercontent.com/fdev-looper/smartshot/main/logo.png" alt="SmartShot Logo" />
+          <span class="rocket">🚀</span>
+        </div>
         SmartShot
       </h1>
       <p>Your intelligent companion for tracking every image download — automatically.</p>
