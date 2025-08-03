@@ -1,11 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>SmartShot</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartShot - Chrome Extension</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #f9f9f9;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    header {
+      background-color: #111;
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    section {
+      padding: 20px 40px;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h2 {
+      color: #2c3e50;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 5px;
+      margin-top: 40px;
+    }
+
+    .file-explanation {
+      background: #ffffff;
+      border-left: 4px solid #2980b9;
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    footer {
+      margin-top: 60px;
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+    }
+
+    a {
+      color: #2980b9;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-  <h1>🚀 Welcome to SmartShot</h1>
-  <p>This is a Chrome extension that tracks your downloaded images with metadata like tab title, URL, and time.</p>
-  <p>Visit my profile: <a href="https://github.com/<your-username>" target="_blank">GitHub Profile</a></p>
+
+  <header>
+    <h1>🚀 SmartShot</h1>
+    <p>Your smart image download tracker — right inside Chrome</p>
+  </header>
+
+  <section>
+    <h2>🧠 What is SmartShot?</h2>
+    <p>
+      <strong>SmartShot</strong> is a lightweight Chrome extension that monitors every image you download. 
+      It logs useful metadata like:
+    </p>
+    <ul>
+      <li>🖼️ Filename of the image</li>
+      <li>🌐 URL of the image source</li>
+      <li>🧾 Title & URL of the tab you downloaded it from</li>
+      <li>⏱️ Timestamp of when it was downloaded</li>
+    </ul>
+
+    <p>Perfect for researchers, journalists, or curious folks who like to track image sources without hassle.</p>
+
+    <h2>🔧 Project Files Explained</h2>
+
+    <div class="file-explanation">
+      <strong>📄 manifest.json:</strong> Defines permissions, background scripts, and extension metadata.
+    </div>
+
+    <div class="file-explanation">
+      <strong>🧠 background.js:</strong> Core brain that listens to downloads and stores metadata in Chrome storage.
+    </div>
+
+    <div class="file-explanation">
+      <strong>🖼️ popup.html + popup.js:</strong> UI to view your image logs, filter them by filename, time, or URL.
+    </div>
+
+    <div class="file-explanation">
+      <strong>🔒 security.js (optional):</strong> Prevents tampering or modifications to your extension logic. Obfuscation/locks can be added here.
+    </div>
+
+    <h2>🎯 Why I Built SmartShot</h2>
+    <p>
+      Ever downloaded a meme or graphic and forgot where it came from?  
+      <strong>SmartShot</strong> ensures you always know the "when", "where", and "what" behind every image you save.  
+      Ideal for:
+    </p>
+    <ul>
+      <li>🧑‍💻 Developers documenting UI changes</li>
+      <li>🧑‍🏫 Teachers & trainers collecting visual material</li>
+      <li>👨‍🔬 Researchers saving scientific graphs or images</li>
+    </ul>
+
+    <h2>🙋 About the Developer</h2>
+    <p>
+      Made with 💻 + ☕ by <a href="https://github.com/fdev-looper" target="_blank">DNAtech (fdev-looper)</a><br/>
+      I’m passionate about building tools that actually solve real-world problems.  
+    </p>
+  </section>
+
+  <footer>
+    🚀 SmartShot by <a href="https://github.com/fdev-looper" target="_blank">fdev-looper</a> • All rights reserved
+  </footer>
+
 </body>
 </html>
