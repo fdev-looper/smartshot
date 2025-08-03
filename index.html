@@ -51,6 +51,8 @@
       text-align: center;
       padding: 20px;
       font-size: 14px;
+      background: #111;
+      color: #eee;
     }
 
     a {
@@ -67,64 +69,79 @@
 
   <header>
     <h1>🚀 SmartShot</h1>
-    <p>Your smart image download tracker — right inside Chrome</p>
+    <p>Your lightweight companion for tracking every image download — automatically.</p>
   </header>
 
   <section>
     <h2>🧠 What is SmartShot?</h2>
     <p>
-      <strong>SmartShot</strong> is a lightweight Chrome extension that monitors every image you download. 
-      It logs useful metadata like:
+      <strong>SmartShot</strong> is a simple yet powerful Chrome extension that keeps track of every image you download — so you never lose context again.
     </p>
-    <ul>
-      <li>🖼️ Filename of the image</li>
-      <li>🌐 URL of the image source</li>
-      <li>🧾 Title & URL of the tab you downloaded it from</li>
-      <li>⏱️ Timestamp of when it was downloaded</li>
-    </ul>
-
-    <p>Perfect for researchers, journalists, or curious folks who like to track image sources without hassle.</p>
-
-    <h2>🔧 Project Files Explained</h2>
-
-    <div class="file-explanation">
-      <strong>📄 manifest.json:</strong> Defines permissions, background scripts, and extension metadata.
-    </div>
-
-    <div class="file-explanation">
-      <strong>🧠 background.js:</strong> Core brain that listens to downloads and stores metadata in Chrome storage.
-    </div>
-
-    <div class="file-explanation">
-      <strong>🖼️ popup.html + popup.js:</strong> UI to view your image logs, filter them by filename, time, or URL.
-    </div>
-
-    <div class="file-explanation">
-      <strong>🔒 security.js (optional):</strong> Prevents tampering or modifications to your extension logic. Obfuscation/locks can be added here.
-    </div>
-
-    <h2>🎯 Why I Built SmartShot</h2>
     <p>
-      Ever downloaded a meme or graphic and forgot where it came from?  
-      <strong>SmartShot</strong> ensures you always know the "when", "where", and "what" behind every image you save.  
-      Ideal for:
+      Whether you're collecting memes, reference images, research graphics, or just saving cool stuff from the web — SmartShot quietly logs important details behind each download:
     </p>
     <ul>
-      <li>🧑‍💻 Developers documenting UI changes</li>
-      <li>🧑‍🏫 Teachers & trainers collecting visual material</li>
-      <li>👨‍🔬 Researchers saving scientific graphs or images</li>
+      <li>🖼️ The filename of the image</li>
+      <li>🌐 The source URL of the image</li>
+      <li>🧾 The tab title and tab URL at download time</li>
+      <li>⏱️ The exact timestamp of when it was downloaded</li>
     </ul>
+
+    <p>
+      It's like a digital memory for your downloads — made for curious minds, content hoarders, and organized nerds alike.
+    </p>
+
+    <h2>🔍 Why SmartShot Exists</h2>
+    <p>
+      Ever downloaded an image and then struggled to remember where you got it from? Yeah, same here. That’s exactly why I built SmartShot.
+    </p>
+    <p>
+      The extension exists to answer one core question: 
+      <strong>"Where did I get this image from and when?"</strong>
+    </p>
+    <p>
+      No more messy folders with mystery files. With SmartShot, you get peace of mind, better tracking, and full context every single time.
+    </p>
+    <p>
+      It's great for:
+    </p>
+    <ul>
+      <li>🧑‍💻 Developers capturing UI screenshots</li>
+      <li>👩‍🏫 Teachers or trainers saving examples</li>
+      <li>👨‍🔬 Researchers collecting image-based data</li>
+      <li>😎 Casual users who want control over their downloads</li>
+    </ul>
+
+    <h2>📁 Breakdown of Project Files</h2>
+
+    <div class="file-explanation">
+      <strong>📄 manifest.json:</strong> The brain map of the extension — it defines permissions, background behavior, and links everything together.
+    </div>
+
+    <div class="file-explanation">
+      <strong>🧠 background.js:</strong> The actual engine. It listens to image downloads and logs the metadata in Chrome’s storage.
+    </div>
+
+    <div class="file-explanation">
+      <strong>🖼️ popup.html + popup.js:</strong> The front-end UI. Here’s where you can view, search, and filter your image log — all inside the extension popup.
+    </div>
+
+    <div class="file-explanation">
+      <strong>🔒 security.js (optional):</strong> Add-on file to prevent users from tampering with the logic. Optional layer of obfuscation and control.
+    </div>
 
     <h2>🙋 About the Developer</h2>
     <p>
-      Made with 💻 + ☕ by <a href="https://github.com/fdev-looper" target="_blank">DNAtech (fdev-looper)</a><br/>
-      I’m passionate about building tools that actually solve real-world problems.  
+      Built with 💻, ☕, and way too many Chrome tabs by <a href="https://github.com/fdev-looper" target="_blank">DNAtech (fdev-looper)</a>.  
+    </p>
+    <p>
+      I love building tools that feel simple but do something magical in the background.  
+      SmartShot is one of those — minimal on the surface, powerful under the hood.
     </p>
   </section>
 
   <footer>
     🚀 SmartShot by <a href="https://github.com/fdev-looper" target="_blank">fdev-looper</a> • All rights reserved
   </footer>
-
 </body>
 </html>
