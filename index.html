@@ -25,6 +25,27 @@
       line-height: 1.6;
     }
 
+    /* Floating emoji follower */
+    .emoji-follower {
+      position: fixed;
+      font-size: 2rem;
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0;
+      transition: all 0.3s ease;
+      transform: translateX(-50%) translateY(-50%);
+    }
+
+    .emoji-follower.active {
+      opacity: 0.8;
+      animation: float 2s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateX(-50%) translateY(-50%) rotate(0deg); }
+      50% { transform: translateX(-50%) translateY(-60%) rotate(5deg); }
+    }
+
     header {
       background: linear-gradient(135deg, var(--dark), #16213e);
       color: white;
@@ -56,18 +77,19 @@
     }
 
     header h1 img {
-      height: 60px;
-      width: 60px;
+      height: 72px;
+      width: 72px;
       border-radius: 12px;
       object-fit: cover;
       transition: all 0.4s ease;
       transform-origin: center;
       border: 2px solid rgba(255,255,255,0.2);
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      vertical-align: middle;
     }
 
     header h1:hover img {
-      transform: scale(1.6);
+      transform: scale(1.8);
       box-shadow: 0 0 30px rgba(67, 97, 238, 0.6);
       border-color: rgba(67, 97, 238, 0.5);
     }
@@ -77,6 +99,7 @@
       font-weight: 700;
       margin: 0;
       line-height: 1;
+      vertical-align: middle;
     }
 
     .rocket {
@@ -277,8 +300,8 @@
       }
       
       header h1 img {
-        height: 50px;
-        width: 50px;
+        height: 60px;
+        width: 60px;
       }
     }
   </style>
@@ -369,5 +392,78 @@
   <footer>
     🚀 SmartShot by <a href="https://github.com/fdev-looper" target="_blank" style="color: #a5d8ff;">fdev-looper</a> • All rights reserved • Made with passion
   </footer>
+
+  <!-- Floating emoji follower -->
+  <div class="emoji-follower" id="emojiFollower">🧠</div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const emojiFollower = document.getElementById('emojiFollower');
+      const sections = document.querySelectorAll('h2');
+      let currentEmoji = '🧠';
+      
+      // Emoji mapping for different sections
+      const emojiMap = {
+        'What is SmartShot': '🧠',
+        'Why SmartShot Exists': '🔍',
+        'Project Architecture': '📁',
+        'About the Developer': '🙋'
+      };
+      
+      // Update emoji based on scroll position
+      function updateEmoji() {
+        const scrollY = window.scrollY;
+        let activeSection = null;
+        
+        sections.forEach(section => {
+          const rect = section.getBoundingClientRect();
+          const sectionTop = rect.top + scrollY;
+          
+          if (scrollY >= sectionTop - 200) {
+            activeSection = section;
+          }
+        });
+        
+        if (activeSection) {
+          const sectionText = activeSection.textContent.replace(/[🧠🔍📁🙋]\s*/, '');
+          const newEmoji = emojiMap[sectionText] || '🧠';
+          
+          if (newEmoji !== currentEmoji) {
+            currentEmoji = newEmoji;
+            emojiFollower.textContent = currentEmoji;
+          }
+        }
+      }
+      
+      // Follow mouse and update emoji
+      document.addEventListener('mousemove', function(e) {
+        emojiFollower.style.left = e.clientX + 'px';
+        emojiFollower.style.top = e.clientY + 'px';
+      });
+      
+      // Show/hide emoji on scroll
+      let scrollTimeout;
+      window.addEventListener('scroll', function() {
+        updateEmoji();
+        emojiFollower.classList.add('active');
+        
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+          emojiFollower.classList.remove('active');
+        }, 2000);
+      });
+      
+      // Hide emoji when mouse leaves window
+      document.addEventListener('mouseleave', function() {
+        emojiFollower.classList.remove('active');
+      });
+      
+      document.addEventListener('mouseenter', function() {
+        if (window.scrollY > 100) {
+          emojiFollower.classList.add('active');
+        }
+      });
+    });
+  </script>
 </body>
 </html>
