@@ -4,72 +4,200 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SmartShot - Chrome Extension</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary: #4361ee;
+      --primary-dark: #3a56d4;
+      --dark: #1a1a2e;
+      --light: #f8f9fa;
+      --gray: #6c757d;
+      --light-gray: #e9ecef;
+    }
+    
     body {
       margin: 0;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: #f9f9f9;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f8fafc;
       color: #333;
       line-height: 1.6;
     }
 
     header {
-      background-color: #111;
+      background: linear-gradient(135deg, var(--dark), #16213e);
       color: white;
-      padding: 40px 20px;
+      padding: 60px 20px 50px;
       text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('https://raw.githubusercontent.com/fdev-looper/smartshot/main/logo.png') no-repeat 20% center/auto 80%;
+      opacity: 0.1;
+    }
+
+    .header-content {
+      position: relative;
+      max-width: 800px;
+      margin: 0 auto;
     }
 
     header h1 {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
+      font-size: 2.8rem;
+      margin-bottom: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    header h1 img {
+      height: 50px;
+      width: auto;
+    }
+
+    header p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin: 0 auto;
+      opacity: 0.9;
+      font-weight: 300;
     }
 
     section {
-      padding: 20px 40px;
+      padding: 40px;
       max-width: 900px;
       margin: auto;
+      background: white;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+      border-radius: 8px;
+      margin-top: -30px;
+      position: relative;
+      z-index: 1;
     }
 
     h2 {
-      color: #2c3e50;
-      border-bottom: 2px solid #e0e0e0;
-      padding-bottom: 5px;
-      margin-top: 40px;
+      color: var(--dark);
+      font-weight: 600;
+      font-size: 1.8rem;
+      margin-top: 50px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--light-gray);
+    }
+
+    h2:first-child {
+      margin-top: 20px;
     }
 
     .file-explanation {
-      background: #ffffff;
-      border-left: 4px solid #2980b9;
-      padding: 15px 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      background: #f8f9fa;
+      border-left: 4px solid var(--primary);
+      padding: 18px 25px;
+      margin: 25px 0;
+      border-radius: 0 4px 4px 0;
+      transition: all 0.2s ease;
+    }
+
+    .file-explanation:hover {
+      background: #f1f3f5;
+      transform: translateX(3px);
+    }
+
+    .file-explanation strong {
+      color: var(--primary);
+      font-weight: 600;
     }
 
     footer {
       margin-top: 60px;
       text-align: center;
-      padding: 20px;
-      font-size: 14px;
-      background: #111;
+      padding: 30px;
+      font-size: 15px;
+      background: var(--dark);
       color: #eee;
     }
 
     a {
-      color: #2980b9;
+      color: var(--primary);
       text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
     }
 
     a:hover {
+      color: var(--primary-dark);
       text-decoration: underline;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+      position: relative;
+      padding-left: 25px;
+    }
+
+    li::before {
+      content: "•";
+      color: var(--primary);
+      font-weight: bold;
+      position: absolute;
+      left: 0;
+    }
+
+    .highlight-box {
+      background: linear-gradient(to right, #f8f9fa, white);
+      padding: 25px;
+      border-radius: 8px;
+      border: 1px solid var(--light-gray);
+      margin: 30px 0;
+    }
+
+    .highlight-box p {
+      margin: 0;
+      font-size: 1.1rem;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 768px) {
+      section {
+        padding: 25px;
+        margin: -20px 15px 0;
+      }
+      
+      header h1 {
+        font-size: 2.2rem;
+      }
+      
+      header::before {
+        background-size: auto 60%;
+        opacity: 0.08;
+      }
     }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>🚀 SmartShot</h1>
-    <p>Your lightweight companion for tracking every image download — automatically.</p>
+    <div class="header-content">
+      <h1>
+        <img src="https://raw.githubusercontent.com/fdev-looper/smartshot/main/logo.png" alt="SmartShot Logo" />
+        SmartShot
+      </h1>
+      <p>Your intelligent companion for tracking every image download — automatically.</p>
+    </div>
   </header>
 
   <section>
@@ -77,9 +205,11 @@
     <p>
       <strong>SmartShot</strong> is a simple yet powerful Chrome extension that keeps track of every image you download — so you never lose context again.
     </p>
-    <p>
-      Whether you're collecting memes, reference images, research graphics, or just saving cool stuff from the web — SmartShot quietly logs important details behind each download:
-    </p>
+    
+    <div class="highlight-box">
+      <p>Whether you're collecting memes, reference images, research graphics, or just saving cool stuff from the web — SmartShot quietly logs important details behind each download:</p>
+    </div>
+    
     <ul>
       <li>🖼️ The filename of the image</li>
       <li>🌐 The source URL of the image</li>
@@ -93,12 +223,13 @@
 
     <h2>🔍 Why SmartShot Exists</h2>
     <p>
-      Ever downloaded an image and then struggled to remember where you got it from? Yeah, same here. That’s exactly why I built SmartShot.
+      Ever downloaded an image and then struggled to remember where you got it from? Yeah, same here. That's exactly why I built SmartShot.
     </p>
-    <p>
-      The extension exists to answer one core question: 
-      <strong>"Where did I get this image from and when?"</strong>
-    </p>
+    
+    <div class="highlight-box">
+      <p>The extension exists to answer one core question: <strong>"Where did I get this image from and when?"</strong></p>
+    </div>
+    
     <p>
       No more messy folders with mystery files. With SmartShot, you get peace of mind, better tracking, and full context every single time.
     </p>
@@ -112,34 +243,31 @@
       <li>😎 Casual users who want control over their downloads</li>
     </ul>
 
-    <h2>📁 Breakdown of Project Files</h2>
+    <h2>📁 Project Architecture</h2>
 
     <div class="file-explanation">
-      <strong>📄 manifest.json:</strong> The brain map of the extension — it defines permissions, background behavior, and links everything together.
+      <strong>📄 manifest.json:</strong> The configuration hub of the extension — defines permissions, background behavior, and links all components together.
     </div>
 
     <div class="file-explanation">
-      <strong>🧠 background.js:</strong> The actual engine. It listens to image downloads and logs the metadata in Chrome’s storage.
+      <strong>🧠 background.js:</strong> The core engine. Listens to image downloads and logs metadata in Chrome's storage with precision.
     </div>
 
     <div class="file-explanation">
-      <strong>🖼️ popup.html + popup.js:</strong> The front-end UI. Here’s where you can view, search, and filter your image log — all inside the extension popup.
+      <strong>🖼️ popup.html + popup.js:</strong> The user interface. View, search, and filter your complete image history directly from the extension popup.
     </div>
-
-   
 
     <h2>🙋 About the Developer</h2>
     <p>
       Built with 💻, ☕, and way too many Chrome tabs by <a href="https://github.com/fdev-looper" target="_blank">DNAtech (fdev-looper)</a>.  
     </p>
     <p>
-      I love building tools that feel simple but do something magical in the background.  
-      SmartShot is one of those — minimal on the surface, powerful under the hood.
+      I specialize in creating tools that appear simple but deliver powerful functionality under the hood. SmartShot embodies this philosophy — minimal interface, maximum utility.
     </p>
   </section>
 
   <footer>
-    🚀 SmartShot by <a href="https://github.com/fdev-looper" target="_blank">fdev-looper</a> • All rights reserved
+    🚀 SmartShot by <a href="https://github.com/fdev-looper" target="_blank" style="color: #a5d8ff;">fdev-looper</a> • All rights reserved • Made with passion
   </footer>
 </body>
 </html>
