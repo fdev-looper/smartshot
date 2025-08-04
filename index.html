@@ -197,6 +197,14 @@
       margin-top: -30px;
       position: relative;
       z-index: 1;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    section.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     h2 {
@@ -206,6 +214,17 @@
       margin-top: 50px;
       padding-bottom: 10px;
       border-bottom: 2px solid var(--light-gray);
+      position: relative;
+    }
+
+    h2::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -2px;
+      width: 50px;
+      height: 3px;
+      background: var(--primary);
     }
 
     h2:first-child {
@@ -284,46 +303,99 @@
       line-height: 1.7;
     }
 
-    /* New Feature Card Styles */
+    /* Modern Feature Card Styles */
     .feature-highlight {
       position: relative;
       display: inline-block;
+      transition: all 0.2s ease;
     }
 
     .feature-card {
-      position: absolute;
-      width: 300px;
+      position: fixed;
+      width: 320px;
       background: white;
-      border-radius: 8px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
       padding: 20px;
-      z-index: 100;
+      z-index: 1000;
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.15s ease, transform 0.15s ease;
       pointer-events: none;
-      border: 1px solid var(--light-gray);
-      transform: translateY(10px);
+      border: 1px solid rgba(0,0,0,0.05);
+      transform: scale(0.95);
+    }
+
+    .feature-highlight:hover {
+      color: var(--primary-dark);
     }
 
     .feature-highlight:hover .feature-card {
       opacity: 1;
-      transform: translateY(0);
+      transform: scale(1);
     }
 
     .feature-card h3 {
       margin-top: 0;
       color: var(--primary);
       font-size: 1.2rem;
+      margin-bottom: 10px;
     }
 
     .feature-card p {
       margin-bottom: 0;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
     }
 
     .feature-highlight {
       border-bottom: 2px dotted var(--primary);
       cursor: help;
+      padding-bottom: 2px;
+    }
+
+    /* Download Button */
+    .download-btn {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      padding: 12px 30px;
+      border-radius: 50px;
+      font-weight: 600;
+      text-decoration: none;
+      margin: 30px 0;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .download-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
+      background: var(--primary-dark);
+    }
+
+    .download-btn::after {
+      content: 'Coming Soon 😊';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--primary);
+      transition: transform 0.3s ease;
+    }
+
+    .download-btn:hover::after {
+      animation: dance 0.5s infinite alternate;
+    }
+
+    @keyframes dance {
+      from { transform: translateY(0) rotate(-2deg); }
+      to { transform: translateY(-3px) rotate(2deg); }
     }
 
     @media (max-width: 768px) {
@@ -347,13 +419,13 @@
       }
 
       .feature-card {
-        width: 250px;
-        left: 50%;
-        transform: translateX(-50%) translateY(10px);
+        width: 280px;
+        left: 50% !important;
+        transform: translateX(-50%) scale(0.95) !important;
       }
       
       .feature-highlight:hover .feature-card {
-        transform: translateX(-50%) translateY(0);
+        transform: translateX(-50%) scale(1) !important;
       }
     }
   </style>
@@ -389,25 +461,25 @@
       <li><span class="feature-highlight">🖼️ The filename of the image
         <div class="feature-card">
           <h3>Filename Tracking</h3>
-          <p>SmartShot records the exact filename of every image you download, including automatically captured screenshots.</p>
+          <p>SmartShot records the exact filename of every image you download, including automatically captured screenshots. It preserves the original filename while removing unnecessary timestamps.</p>
         </div>
       </span></li>
       <li><span class="feature-highlight">🌐 The source URL of the image
         <div class="feature-card">
           <h3>Source URL Preservation</h3>
-          <p>Never lose track of where an image came from. SmartShot saves the direct URL of every downloaded image.</p>
+          <p>Never lose track of where an image came from. SmartShot saves the direct URL of every downloaded image, allowing you to trace back to the original source.</p>
         </div>
       </span></li>
       <li><span class="feature-highlight">🧾 The tab title and tab URL at download time
         <div class="feature-card">
           <h3>Context Capture</h3>
-          <p>SmartShot remembers which webpage you were on when you downloaded the image, preserving valuable context.</p>
+          <p>SmartShot remembers which webpage you were on when you downloaded the image, preserving valuable context that helps you remember why you saved it.</p>
         </div>
       </span></li>
       <li><span class="feature-highlight">⏱️ The exact timestamp of when it was downloaded
         <div class="feature-card">
           <h3>Precise Timestamps</h3>
-          <p>Every download is logged with the exact date and time, making it easy to organize and find your images.</p>
+          <p>Every download is logged with the exact date and time, making it easy to organize and find your images chronologically.</p>
         </div>
       </span></li>
     </ul>
@@ -435,7 +507,7 @@
       <li><span class="feature-highlight">🧑‍💻 Developers capturing UI screenshots
         <div class="feature-card">
           <h3>Developer Friendly</h3>
-          <p>Perfect for developers who need to track UI references, design inspirations, or bug screenshots.</p>
+          <p>Perfect for tracking UI references, design inspirations, or bug screenshots with full context of where they came from.</p>
         </div>
       </span></li>
       <li><span class="feature-highlight">👩‍🏫 Teachers or trainers saving examples
@@ -447,7 +519,7 @@
       <li><span class="feature-highlight">👨‍🔬 Researchers collecting image-based data
         <div class="feature-card">
           <h3>Research Tool</h3>
-          <p>Essential for researchers who need to maintain accurate records of visual references and sources.</p>
+          <p>Essential for maintaining accurate records of visual references and sources in your research workflow.</p>
         </div>
       </span></li>
       <li><span class="feature-highlight">😎 Casual users who want control over their downloads
@@ -457,6 +529,10 @@
         </div>
       </span></li>
     </ul>
+
+    <div style="text-align: center;">
+      <a href="#" class="download-btn">Download Now</a>
+    </div>
 
     <h2>📁 Project Architecture</h2>
 
@@ -497,6 +573,19 @@
       let mouseX = 0;
       let mouseY = 0;
       
+      // Show sections with scroll animation
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1 });
+      
+      document.querySelectorAll('section').forEach(section => {
+        observer.observe(section);
+      });
+
       // Emoji mapping for different sections
       const emojiMap = {
         'What is SmartShot': '🧠',
@@ -508,10 +597,32 @@
       // Position feature cards relative to their triggers
       document.querySelectorAll('.feature-highlight').forEach(feature => {
         const card = feature.querySelector('.feature-card');
-        feature.addEventListener('mouseenter', () => {
+        feature.addEventListener('mouseenter', (e) => {
           const rect = feature.getBoundingClientRect();
-          card.style.left = `${rect.left}px`;
-          card.style.top = `${rect.bottom + 5}px`;
+          const viewportWidth = window.innerWidth;
+          
+          // Position card above or below depending on position
+          if (rect.top > window.innerHeight / 2) {
+            card.style.top = `${rect.top - card.offsetHeight - 10}px`;
+          } else {
+            card.style.top = `${rect.bottom + 10}px`;
+          }
+          
+          // Position card left or right depending on position
+          if (rect.left > viewportWidth / 2) {
+            card.style.left = `${rect.right - card.offsetWidth}px`;
+          } else {
+            card.style.left = `${rect.left}px`;
+          }
+          
+          // Ensure card stays within viewport
+          const cardRect = card.getBoundingClientRect();
+          if (cardRect.right > viewportWidth) {
+            card.style.left = `${viewportWidth - card.offsetWidth - 20}px`;
+          }
+          if (cardRect.left < 0) {
+            card.style.left = '20px';
+          }
         });
       });
       
