@@ -942,19 +942,36 @@
     </section>
 
     <section>
-      <h2>📂 SmartShot File Architecture</h2>
-      <p>SmartShot maintains a structured approach to tracking your downloads:</p>
-      
-      <div class="highlight-box">
-        <p><strong>history.json</strong> - The structured data file that stores all your download metadata in a machine-readable format, ensuring your history is preserved even if you reinstall the extension.</p>
-      </div>
-      
-      <div class="highlight-box">
-        <p><strong>history.html</strong> - The human-readable dashboard that displays your complete download history in an organized, searchable format, pulling data from the JSON file.</p>
-      </div>
-      
-      <p>This dual-file approach combines the best of both worlds: structured data storage with a beautiful, user-friendly interface.</p>
-    </section>
+  <h2>📂 SmartShot File Architecture</h2>
+  <p>SmartShot is more than just a pretty UI — it’s a finely-tuned machine made of multiple working parts. Here's how it’s structured under the hood:</p>
+
+  <div class="highlight-box">
+    <p><strong>manifest.json</strong> – The blueprint of the extension. It defines permissions, background scripts, icons, action popups, and everything Chrome needs to understand SmartShot.</p>
+  </div>
+
+  <div class="highlight-box">
+    <p><strong>popup.html</strong> – The extension’s control center. It provides a lightweight interface users interact with when clicking the Chrome extension icon.</p>
+  </div>
+
+  <div class="highlight-box">
+    <p><strong>popup.js</strong> – The brains behind <code>popup.html</code>. Handles user interactions like toggling screenshot view, searching, or applying filters — all from the popup.</p>
+  </div>
+
+  <div class="highlight-box">
+    <p><strong>background.js</strong> – The always-on observer. Listens for download and screenshot events in real time, captures metadata, and writes them into storage like a silent ninja.</p>
+  </div>
+
+  <div class="highlight-box">
+    <p><strong>history.json</strong> – The structured vault. Stores all screenshot and download metadata in a machine-readable format. Even if you uninstall and reinstall — your story stays intact.</p>
+  </div>
+
+  <div class="highlight-box">
+    <p><strong>history.html</strong> – Your visual time machine. It reads from <code>history.json</code> and presents a beautiful, searchable, human-friendly timeline of everything you’ve saved.</p>
+  </div>
+
+  <p>This modular architecture gives SmartShot superpowers: it separates logic, UI, and storage into neat components, making it easy to maintain, expand, and debug. It's like Lego — clean, reusable, and fun to build with.</p>
+</section>
+
 
     <section>
       <h2>🚀 Get SmartShot Today</h2>
