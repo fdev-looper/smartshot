@@ -3,26 +3,158 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SmartShot - Chrome Extension</title>
+  <title>SmartShot - Intelligent Image Tracking Chrome Extension</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: #4361ee;
       --primary-dark: #3a56d4;
-      --dark: #1a1a2e;
+      --primary-light: #5a78ff;
+      --accent: #f72585;
+      --dark: #0d1117;
+      --dark-secondary: #161b22;
       --light: #f8f9fa;
       --gray: #6c757d;
       --light-gray: #e9ecef;
+      --success: #28a745;
+      --warning: #ffc107;
+      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --shadow-light: 0 4px 20px rgba(0,0,0,0.08);
+      --shadow-medium: 0 8px 30px rgba(0,0,0,0.12);
+      --shadow-heavy: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
     
     body {
-      margin: 0;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f8fafc;
-      color: #333;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      color: var(--dark);
       line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Animated Background */
+    .bg-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      background: linear-gradient(-45deg, #f5f7fa, #e4e8f0, #ebf4ff, #e6f0ff);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Floating bubbles */
+    .bubbles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bubble {
+      position: absolute;
+      bottom: -100px;
+      background: rgba(67, 97, 238, 0.1);
+      border-radius: 50%;
+      animation: rise 15s infinite ease-in;
+    }
+
+    .bubble:nth-child(1) {
+      width: 40px;
+      height: 40px;
+      left: 10%;
+      animation-duration: 8s;
+    }
+
+    .bubble:nth-child(2) {
+      width: 20px;
+      height: 20px;
+      left: 20%;
+      animation-duration: 5s;
+      animation-delay: 1s;
+    }
+
+    .bubble:nth-child(3) {
+      width: 50px;
+      height: 50px;
+      left: 35%;
+      animation-duration: 7s;
+      animation-delay: 2s;
+    }
+
+    .bubble:nth-child(4) {
+      width: 80px;
+      height: 80px;
+      left: 50%;
+      animation-duration: 11s;
+      animation-delay: 0s;
+    }
+
+    .bubble:nth-child(5) {
+      width: 35px;
+      height: 35px;
+      left: 55%;
+      animation-duration: 6s;
+      animation-delay: 1s;
+    }
+
+    .bubble:nth-child(6) {
+      width: 45px;
+      height: 45px;
+      left: 65%;
+      animation-duration: 8s;
+      animation-delay: 3s;
+    }
+
+    .bubble:nth-child(7) {
+      width: 25px;
+      height: 25px;
+      left: 75%;
+      animation-duration: 7s;
+      animation-delay: 2s;
+    }
+
+    .bubble:nth-child(8) {
+      width: 80px;
+      height: 80px;
+      left: 80%;
+      animation-duration: 6s;
+      animation-delay: 1s;
+    }
+
+    @keyframes rise {
+      0% {
+        bottom: -100px;
+        transform: translateX(0);
+      }
+      50% {
+        transform: translateX(100px);
+      }
+      100% {
+        bottom: 1080px;
+        transform: translateX(-200px);
+      }
     }
 
     /* Floating emoji follower */
@@ -34,10 +166,11 @@
       opacity: 0;
       transition: opacity 0.3s ease;
       transform: translate(-50%, -50%);
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
     }
 
     .emoji-follower.active {
-      opacity: 0.8;
+      opacity: 0.9;
       animation: float 2s ease-in-out infinite;
     }
 
@@ -47,28 +180,32 @@
     }
 
     header {
-      background: linear-gradient(135deg, var(--dark), #16213e);
-      color: white;
-      padding: 60px 20px 50px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      color: var(--dark);
+      padding: 100px 20px 80px;
       text-align: center;
       position: relative;
       overflow: hidden;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      box-shadow: var(--shadow-light);
     }
 
     .header-content {
       position: relative;
-      max-width: 800px;
+      max-width: 1000px;
       margin: 0 auto;
     }
 
     header h1 {
-      font-size: 2.8rem;
-      margin-bottom: 15px;
-      font-weight: 700;
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+      font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 20px;
+      gap: 25px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.05);
     }
 
     .logo-container {
@@ -77,129 +214,97 @@
     }
 
     header h1 img {
-      height: 72px;
-      width: 72px;
-      border-radius: 12px;
+      height: 85px;
+      width: 85px;
+      border-radius: 20px;
       object-fit: cover;
-      transition: all 0.4s ease;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       transform-origin: center;
-      border: 2px solid rgba(255,255,255,0.2);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      border: 3px solid rgba(67, 97, 238, 0.3);
+      box-shadow: 0 8px 25px rgba(67, 97, 238, 0.2);
       vertical-align: middle;
     }
 
     header h1:hover img {
-      transform: scale(1.8);
-      box-shadow: 0 0 30px rgba(67, 97, 238, 0.6);
-      border-color: rgba(67, 97, 238, 0.5);
+      transform: scale(1.15) rotate(5deg);
+      box-shadow: 0 0 40px rgba(67, 97, 238, 0.3), 0 0 80px rgba(67, 97, 238, 0.2);
+      border-color: rgba(67, 97, 238, 0.8);
     }
 
     .title-text {
-      font-size: 2.8rem;
-      font-weight: 700;
+      font-size: 3.5rem;
+      font-weight: 800;
       margin: 0;
       line-height: 1;
       vertical-align: middle;
+      background: linear-gradient(135deg, #4361ee, #3a0ca3);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .rocket {
       position: absolute;
-      font-size: 24px;
+      font-size: 28px;
       opacity: 0;
       transition: all 0.5s ease;
       pointer-events: none;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));
     }
 
-    .rocket-1 {
-      right: -40px;
-      top: -25px;
-    }
+    .rocket-1 { right: -50px; top: -30px; }
+    .rocket-2 { right: -60px; top: 15px; }
+    .rocket-3 { right: -45px; top: 55px; }
 
-    .rocket-2 {
-      right: -50px;
-      top: 10px;
-    }
-
-    .rocket-3 {
-      right: -35px;
-      top: 45px;
-    }
-
-    header h1:hover .rocket-1 {
-      animation: fly1 3s ease-in-out forwards;
-    }
-
-    header h1:hover .rocket-2 {
-      animation: fly2 3.2s ease-in-out 0.3s forwards;
-    }
-
-    header h1:hover .rocket-3 {
-      animation: fly3 2.8s ease-in-out 0.6s forwards;
-    }
+    header h1:hover .rocket-1 { animation: fly1 3s ease-in-out forwards; }
+    header h1:hover .rocket-2 { animation: fly2 3.2s ease-in-out 0.3s forwards; }
+    header h1:hover .rocket-3 { animation: fly3 2.8s ease-in-out 0.6s forwards; }
 
     @keyframes fly1 {
-      0% {
-        transform: translate(0, 0) rotate(0deg);
-        opacity: 0;
-      }
-      20% {
-        opacity: 1;
-      }
-      100% {
-        transform: translate(250px, -120px) rotate(35deg);
-        opacity: 0;
-      }
+      0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+      20% { opacity: 1; }
+      100% { transform: translate(300px, -150px) rotate(35deg); opacity: 0; }
     }
 
     @keyframes fly2 {
-      0% {
-        transform: translate(0, 0) rotate(0deg);
-        opacity: 0;
-      }
-      25% {
-        opacity: 1;
-      }
-      100% {
-        transform: translate(200px, -80px) rotate(-25deg);
-        opacity: 0;
-      }
+      0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+      25% { opacity: 1; }
+      100% { transform: translate(250px, -100px) rotate(-25deg); opacity: 0; }
     }
 
     @keyframes fly3 {
-      0% {
-        transform: translate(0, 0) rotate(0deg);
-        opacity: 0;
-      }
-      30% {
-        opacity: 1;
-      }
-      100% {
-        transform: translate(180px, -150px) rotate(45deg);
-        opacity: 0;
-      }
+      0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+      30% { opacity: 1; }
+      100% { transform: translate(220px, -180px) rotate(45deg); opacity: 0; }
     }
 
     header p {
-      font-size: 1.2rem;
-      max-width: 600px;
+      font-size: 1.4rem;
+      max-width: 700px;
       margin: 0 auto;
-      opacity: 0.9;
-      font-weight: 300;
+      opacity: 0.8;
+      font-weight: 400;
+      color: var(--gray);
+    }
+
+    /* Main Content Container */
+    .main-container {
+      position: relative;
+      z-index: 1;
+      padding-bottom: 60px;
     }
 
     section {
-      padding: 40px;
-      max-width: 900px;
-      margin: auto;
-      background: white;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.03);
-      border-radius: 8px;
-      margin-top: -30px;
-      position: relative;
-      z-index: 1;
+      padding: 60px 40px;
+      max-width: 1100px;
+      margin: 40px auto;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-medium);
+      border-radius: 24px;
+      border: 1px solid rgba(0,0,0,0.05);
       opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
+      transform: translateY(30px);
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     section.visible {
@@ -209,11 +314,12 @@
 
     h2 {
       color: var(--dark);
-      font-weight: 600;
-      font-size: 1.8rem;
-      margin-top: 50px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid var(--light-gray);
+      font-weight: 700;
+      font-size: 2.2rem;
+      margin-top: 60px;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 3px solid var(--light-gray);
       position: relative;
     }
 
@@ -221,92 +327,150 @@
       content: '';
       position: absolute;
       left: 0;
-      bottom: -2px;
-      width: 50px;
-      height: 3px;
-      background: var(--primary);
+      bottom: -3px;
+      width: 80px;
+      height: 4px;
+      background: var(--gradient-primary);
+      border-radius: 2px;
     }
 
     h2:first-child {
       margin-top: 20px;
     }
 
-    .file-explanation {
-      background: #f8f9fa;
-      border-left: 4px solid var(--primary);
-      padding: 18px 25px;
-      margin: 25px 0;
-      border-radius: 0 4px 4px 0;
-      transition: all 0.2s ease;
+    /* Enhanced Cards */
+    .feature-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      margin: 40px 0;
     }
 
-    .file-explanation:hover {
-      background: #f1f3f5;
-      transform: translateX(3px);
+    .feature-card-static {
+      background: white;
+      border: 1px solid rgba(0,0,0,0.05);
+      border-radius: 16px;
+      padding: 30px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--shadow-light);
+      position: relative;
+      overflow: hidden;
     }
 
-    .file-explanation strong {
+    .feature-card-static::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--gradient-primary);
+    }
+
+    .feature-card-static:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-medium);
+      border-color: var(--primary);
+    }
+
+    .feature-card-static .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      display: block;
       color: var(--primary);
+    }
+
+    .feature-card-static h3 {
+      color: var(--primary);
+      font-size: 1.3rem;
+      margin-bottom: 15px;
       font-weight: 600;
     }
 
-    footer {
-      margin-top: 60px;
-      text-align: center;
+    .feature-card-static p {
+      color: var(--gray);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* Comparison Section */
+    .comparison-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin: 40px 0;
+    }
+
+    .comparison-card {
       padding: 30px;
-      font-size: 15px;
-      background: var(--dark);
-      color: #eee;
-    }
-
-    a {
-      color: var(--primary);
-      text-decoration: none;
-      font-weight: 500;
-      transition: all 0.2s ease;
-    }
-
-    a:hover {
-      color: var(--primary-dark);
-      text-decoration: underline;
-    }
-
-    ul {
-      padding-left: 20px;
-    }
-
-    li {
-      margin-bottom: 8px;
+      border-radius: 20px;
       position: relative;
-      padding-left: 25px;
+      overflow: hidden;
+      box-shadow: var(--shadow-medium);
     }
 
-    li::before {
-      content: "•";
+    .comparison-card.traditional {
+      background: white;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .comparison-card.smartshot {
+      background: white;
+      border: 1px solid rgba(67, 97, 238, 0.2);
+    }
+
+    .comparison-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .comparison-card.traditional h3 {
+      color: #ee5a6f;
+    }
+
+    .comparison-card.smartshot h3 {
       color: var(--primary);
-      font-weight: bold;
+    }
+
+    .comparison-card ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .comparison-card li {
+      padding: 10px 0;
+      position: relative;
+      padding-left: 35px;
+      line-height: 1.6;
+    }
+
+    .comparison-card.traditional li::before {
+      content: "❌";
       position: absolute;
       left: 0;
+      font-size: 1.2rem;
+      color: #ee5a6f;
     }
 
-    .highlight-box {
-      background: linear-gradient(to right, #f8f9fa, white);
-      padding: 25px;
-      border-radius: 8px;
-      border: 1px solid var(--light-gray);
-      margin: 30px 0;
+    .comparison-card.smartshot li::before {
+      content: "✅";
+      position: absolute;
+      left: 0;
+      font-size: 1.2rem;
+      color: var(--primary);
     }
 
-    .highlight-box p {
-      margin: 0;
-      font-size: 1.1rem;
-      line-height: 1.7;
-    }
-
-    /* Modern Feature Card Styles */
+    /* Interactive hover cards */
     .feature-highlight {
       position: relative;
-      display: inline-block;
+      display: inline;
+      border-bottom: 2px dotted var(--primary);
+      cursor: help;
+      padding-bottom: 2px;
       transition: all 0.2s ease;
     }
 
@@ -314,26 +478,32 @@
       position: fixed;
       width: 320px;
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      border-radius: 16px;
+      box-shadow: var(--shadow-heavy);
       padding: 20px;
       z-index: 1000;
       opacity: 0;
-      transition: opacity 0.15s ease, transform 0.15s ease;
+      visibility: hidden;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
-      border: 1px solid rgba(0,0,0,0.05);
-      transform: scale(0.95);
+      border: 1px solid rgba(0,0,0,0.1);
+      transform: scale(0.95) translateY(10px);
       max-height: 80vh;
       overflow-y: auto;
+      top: 100px;
+      right: 50px;
     }
 
     .feature-highlight:hover {
       color: var(--primary-dark);
+      border-color: var(--primary-dark);
     }
 
     .feature-highlight:hover .feature-card {
       opacity: 1;
-      transform: scale(1);
+      visibility: visible;
+      transform: scale(1) translateY(0);
+      pointer-events: auto;
     }
 
     .feature-card h3 {
@@ -341,78 +511,103 @@
       color: var(--primary);
       font-size: 1.2rem;
       margin-bottom: 10px;
+      font-weight: 600;
     }
 
     .feature-card p {
       margin-bottom: 0;
       font-size: 0.95rem;
-      line-height: 1.5;
+      line-height: 1.6;
+      color: var(--gray);
     }
 
-    .feature-highlight {
-      border-bottom: 2px dotted var(--primary);
-      cursor: help;
-      padding-bottom: 2px;
-    }
-
-    /* Download Button */
-    .download-btn {
-      display: inline-block;
-      background: var(--primary);
-      color: white;
-      padding: 12px 30px;
-      border-radius: 50px;
-      font-weight: 600;
-      text-decoration: none;
-      margin: 30px 0;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    /* Enhanced highlight box */
+    .highlight-box {
+      background: white;
+      border: 1px solid rgba(67, 97, 238, 0.2);
+      border-radius: 16px;
+      padding: 30px;
+      margin: 40px 0;
       position: relative;
       overflow: hidden;
+      box-shadow: var(--shadow-light);
     }
 
-    .download-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
-      background: var(--primary-dark);
-    }
-
-    .download-btn::after {
-      content: 'Try Now!';
+    .highlight-box::before {
+      content: '';
       position: absolute;
       top: 0;
       left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--gradient-primary);
+    }
+
+    .highlight-box p {
+      margin: 0;
+      font-size: 1.1rem;
+      line-height: 1.8;
+      font-weight: 500;
+      color: var(--dark);
+    }
+
+    /* Modern button */
+    .download-btn {
+      display: inline-block;
+      background: var(--gradient-primary);
+      color: white;
+      padding: 18px 40px;
+      border-radius: 50px;
+      font-weight: 600;
+      text-decoration: none;
+      margin: 40px 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 8px 25px rgba(67, 97, 238, 0.3);
+      position: relative;
+      overflow: hidden;
+      font-size: 1.1rem;
+      border: none;
+      cursor: pointer;
+    }
+
+    .download-btn:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 15px 35px rgba(67, 97, 238, 0.4);
+    }
+
+    .download-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
       width: 100%;
       height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--primary);
-      transition: all 0.3s ease;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
     }
 
-    .download-btn:hover::after {
-      animation: pulse 0.8s infinite alternate;
-      text-shadow: 0 0 10px rgba(255,255,255,0.8);
+    .download-btn:hover::before {
+      left: 100%;
     }
 
-    /* Coming Soon Popup */
+    /* Coming Soon Popup - Enhanced */
     .coming-soon-popup {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%) scale(0.8);
       background: white;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      padding: 40px;
+      border-radius: 24px;
+      box-shadow: var(--shadow-heavy);
       z-index: 2000;
       opacity: 0;
       pointer-events: none;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       text-align: center;
-      max-width: 300px;
+      max-width: 400px;
       width: 90%;
+      border: 1px solid rgba(0,0,0,0.1);
     }
 
     .coming-soon-popup.active {
@@ -426,31 +621,37 @@
       margin-bottom: 20px;
       display: block;
       animation: dance 1s infinite alternate;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));
     }
 
     .coming-soon-popup h3 {
       margin-top: 0;
       color: var(--primary);
+      font-size: 1.5rem;
+      font-weight: 700;
     }
 
     .coming-soon-popup p {
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      color: var(--gray);
+      line-height: 1.6;
     }
 
     .coming-soon-popup .close-btn {
-      background: var(--primary);
+      background: var(--gradient-primary);
       color: white;
       border: none;
-      padding: 8px 20px;
+      padding: 12px 30px;
       border-radius: 50px;
       cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s ease;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 1rem;
     }
 
     .coming-soon-popup .close-btn:hover {
-      background: var(--primary-dark);
       transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
     }
 
     .overlay {
@@ -459,7 +660,8 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
       z-index: 1000;
       opacity: 0;
       pointer-events: none;
@@ -471,9 +673,79 @@
       pointer-events: auto;
     }
 
+    /* Enhanced footer */
+    footer {
+      margin-top: 80px;
+      text-align: center;
+      padding: 40px;
+      font-size: 16px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      color: var(--gray);
+      border-top: 1px solid rgba(0,0,0,0.05);
+    }
+
+    /* Enhanced list styles */
+    ul {
+      padding-left: 0;
+      list-style: none;
+    }
+
+    li {
+      margin-bottom: 12px;
+      position: relative;
+      padding-left: 35px;
+    }
+
+    li::before {
+      content: "✨";
+      position: absolute;
+      left: 0;
+      font-size: 1.2rem;
+      color: var(--primary);
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    a:hover {
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
+
+    /* New Features Badge */
+    .new-feature {
+      display: inline-block;
+      background: var(--gradient-secondary);
+      color: white;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+      animation: pulse 2s infinite;
+    }
+
+    /* Developer Credit */
+    .developer-credit {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      color: var(--gray);
+    }
+
+    .developer-credit a {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
     @keyframes pulse {
-      from { transform: scale(1); }
-      to { transform: scale(1.05); }
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
     }
 
     @keyframes dance {
@@ -484,375 +756,278 @@
       100% { transform: rotate(0deg) scale(1); }
     }
 
+    /* Responsive Design */
     @media (max-width: 768px) {
       section {
-        padding: 25px;
-        margin: -20px 15px 0;
+        padding: 40px 25px;
+        margin: 20px 15px;
+      }
+      
+      header {
+        padding: 80px 20px 60px;
       }
       
       header h1 {
-        font-size: 2.2rem;
+        font-size: 2.5rem;
         gap: 15px;
+        flex-direction: column;
       }
       
       .title-text {
-        font-size: 2.2rem;
+        font-size: 2.5rem;
       }
       
       header h1 img {
-        height: 60px;
-        width: 60px;
+        height: 70px;
+        width: 70px;
+        margin-bottom: 15px;
       }
 
       .feature-card {
-        width: 280px;
-        left: 50% !important;
-        transform: translateX(-50%) scale(0.95) !important;
-      }
-      
-      .feature-highlight:hover .feature-card {
-        transform: translateX(-50%) scale(1) !important;
+        width: 300px;
+        right: 20px;
       }
 
-      .coming-soon-popup {
-        padding: 20px;
+      .comparison-container {
+        grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
+  <div class="bg-animation"></div>
+  <div class="bubbles">
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+  </div>
+  <div class="emoji-follower"></div>
 
   <header>
     <div class="header-content">
       <h1>
         <div class="logo-container">
-         <img src="./Smartshot logo.png" alt="SmartShot Logo" />
+         <img src="https://via.placeholder.com/85x85/4361ee/ffffff?text=SS" alt="SmartShot Logo" />
           <span class="rocket rocket-1">🚀</span>
           <span class="rocket rocket-2">🚀</span>
           <span class="rocket rocket-3">🚀</span>
         </div>
         <span class="title-text">SmartShot</span>
       </h1>
-      <p>Your intelligent companion for tracking every image download — automatically.</p>
+      <p>Your intelligent companion for tracking every image download — with complete context, always.</p>
     </div>
   </header>
 
-  <section>
-    <h2>🧠 What is SmartShot?</h2>
-    <p>
-      <strong>SmartShot</strong> is a simple yet powerful Chrome extension that keeps track of every image you download — so you never lose context again.
-    </p>
-    
-    <div class="highlight-box">
-      <p>Whether you're collecting memes, reference images, research graphics, or just saving cool stuff from the web — SmartShot quietly logs important details behind each download:</p>
-    </div>
-    
-    <ul>
-      <li><span class="feature-highlight">🖼️ The filename of the image
-        <div class="feature-card">
-          <h3>Filename Tracking</h3>
-          <p>SmartShot records the exact filename of every image you download, including automatically captured screenshots. It preserves the original filename while removing unnecessary timestamps.</p>
+  <div class="main-container">
+    <section>
+      <h2>🧠 What is SmartShot?</h2>
+      <p>
+        <strong>SmartShot</strong> is a revolutionary Chrome extension that transforms how you manage image downloads. Unlike traditional file managers, SmartShot captures the complete story behind every image.
+      </p>
+      
+      <div class="highlight-box">
+        <p>Whether you're collecting memes, reference images, research graphics, or saving design inspiration — SmartShot quietly logs crucial metadata that Windows Explorer simply can't provide:</p>
+      </div>
+      
+      <div class="feature-cards-grid">
+        <div class="feature-card-static">
+          <span class="feature-icon">🖼️</span>
+          <h3>Smart Filename Tracking</h3>
+          <p>Records exact filenames with intelligent cleanup, removing unnecessary timestamps while preserving meaningful names.</p>
         </div>
-      </span></li>
-      <li><span class="feature-highlight">🌐 The source URL of the image
-        <div class="feature-card">
+        <div class="feature-card-static">
+          <span class="feature-icon">🌐</span>
           <h3>Source URL Preservation</h3>
-          <p>Never lose track of where an image came from. SmartShot saves the direct URL of every downloaded image, allowing you to trace back to the original source.</p>
+          <p>Never lose track of where an image originated. Direct URLs are saved for easy back-tracking to original sources.</p>
         </div>
-      </span></li>
-      <li><span class="feature-highlight">🧾 The tab title and tab URL at download time
-        <div class="feature-card">
-          <h3>Context Capture</h3>
-          <p>SmartShot remembers which webpage you were on when you downloaded the image, preserving valuable context that helps you remember why you saved it.</p>
+        <div class="feature-card-static">
+          <span class="feature-icon">🧾</span>
+          <h3>Complete Context Capture</h3>
+          <p>Preserves the webpage title and URL where you found the image, maintaining valuable context that explains why you saved it.</p>
         </div>
-      </span></li>
-      <li><span class="feature-highlight">⏱️ The exact timestamp of when it was downloaded
-        <div class="feature-card">
+        <div class="feature-card-static">
+          <span class="feature-icon">⏱️</span>
           <h3>Precise Timestamps</h3>
-          <p>Every download is logged with the exact date and time, making it easy to organize and find your images chronologically.</p>
+          <p>Every download logged with exact date and time, enabling powerful chronological organization and search.</p>
         </div>
-      </span></li>
-    </ul>
+      </div>
 
-    <p>
-      It's like a digital memory for your downloads — made for curious minds, content hoarders, and organized nerds alike.
-    </p>
+      <p>
+        It's like having a digital memory for your downloads — perfect for curious minds, content creators, researchers, and anyone who values organization.
+      </p>
 
-    <h2>🔍 Why SmartShot Exists</h2>
-    <p>
-      Ever downloaded an image and then struggled to remember where you got it from? Yeah, same here. That's exactly why I built SmartShot.
-    </p>
-    
-    <div class="highlight-box">
-      <p>The extension exists to answer one core question: <strong>"Where did I get this image from and when?"</strong></p>
-    </div>
-    
-    <p>
-      No more messy folders with mystery files. With SmartShot, you get peace of mind, better tracking, and full context every single time.
-    </p>
-    <p>
-      It's great for:
-    </p>
-    <ul>
-      <li><span class="feature-highlight">🧑‍💻 Developers capturing UI screenshots
-        <div class="feature-card">
-          <h3>Developer Friendly</h3>
-          <p>Perfect for tracking UI references, design inspirations, or bug screenshots with full context of where they came from.</p>
+      <h2>🆚 SmartShot vs Traditional File Management</h2>
+      <div class="comparison-container">
+        <div class="comparison-card traditional">
+          <h3>😔 Traditional Windows Directory</h3>
+          <ul>
+            <li>Just filename and date</li>
+            <li>No source information</li>
+            <li>No context about why you saved it</li>
+            <li>Mystery files everywhere</li>
+            <li>Manual organization required</li>
+            <li>Difficult to find specific images</li>
+          </ul>
         </div>
-      </span></li>
-      <li><span class="feature-highlight">👩‍🏫 Teachers or trainers saving examples
-        <div class="feature-card">
-          <h3>Education Use</h3>
-          <p>Great for educators collecting visual materials for lessons, presentations, or student feedback.</p>
+        <div class="comparison-card smartshot">
+          <h3>🎉 SmartShot Intelligence</h3>
+          <ul>
+            <li>Complete download history with metadata</li>
+            <li>Source website and direct image URL</li>
+            <li>Full context of when and why you saved it</li>
+            <li>Searchable and filterable records</li>
+            <li>Automatic smart organization</li>
+            <li>Instant context recall for any image</li>
+          </ul>
         </div>
-      </span></li>
-      <li><span class="feature-highlight">👨‍🔬 Researchers collecting image-based data
-        <div class="feature-card">
-          <h3>Research Tool</h3>
-          <p>Essential for maintaining accurate records of visual references and sources in your research workflow.</p>
-        </div>
-      </span></li>
-      <li><span class="feature-highlight">😎 Casual users who want control over their downloads
-        <div class="feature-card">
-          <h3>Everyone Benefits</h3>
-          <p>Whether you're saving memes, inspiration, or important references, SmartShot keeps everything organized.</p>
-        </div>
-      </span></li>
-    </ul>
+      </div>
+    </section>
 
-    <div style="text-align: center;">
-      <a href="#" class="download-btn" id="tryNowBtn">Download Now</a>
-    </div>
+    <section>
+      <h2>🔍 Why SmartShot Exists</h2>
+      <p>
+        Ever stared at a folder full of images thinking <em>"Where did I get this from?"</em> or <em>"Why did I save this?"</em> You're not alone. Traditional file systems are great for storage but terrible for context.
+      </p>
+      
+      <div class="highlight-box">
+        <p>SmartShot solves the fundamental problem: <strong>"I know I saved this image for a reason, but what was it?"</strong> — providing instant answers through intelligent metadata tracking.</p>
+      </div>
+      
+      <p>Perfect for diverse use cases:</p>
+      
+      <ul>
+        <li><span class="feature-highlight">🧑‍💻 Developers capturing UI screenshots and design references
+          <div class="feature-card">
+            <h3>Developer Workflow</h3>
+            <p>Track UI inspirations, bug screenshots, and design references with full context of where they came from and what project they relate to.</p>
+          </div>
+        </span></li>
+        <li><span class="feature-highlight">👩‍🏫 Educators collecting visual materials for lessons
+          <div class="feature-card">
+            <h3>Educational Resources</h3>
+            <p>Build comprehensive libraries of educational images with source attribution and context for proper citation and reuse.</p>
+          </div>
+        </span></li>
+        <li><span class="feature-highlight">👨‍🔬 Researchers gathering image-based data and references
+          <div class="feature-card">
+            <h3>Research Documentation</h3>
+            <p>Maintain accurate records of visual references with complete source information for academic integrity and future reference.</p>
+          </div>
+        </span></li>
+        <li><span class="feature-highlight">🎨 Designers collecting inspiration and mood boards
+          <div class="feature-card">
+            <h3>Creative Workflow</h3>
+            <p>Build extensive inspiration libraries with source attribution, making it easy to revisit and credit original creators.</p>
+          </div>
+        </span><span class="new-feature">NEW</span></li>
+        <li><span class="feature-highlight">📱 Social media managers curating content
+          <div class="feature-card">
+            <h3>Content Curation</h3>
+            <p>Track viral images, memes, and trending visuals with complete source information for proper attribution and engagement analysis.</p>
+          </div>
+        </span><span class="new-feature">NEW</span></li>
+        <li><span class="feature-highlight">😎 Anyone who wants organized, contextual downloads
+          <div class="feature-card">
+            <h3>Personal Organization</h3>
+            <p>Whether saving memes, recipes, travel inspiration, or important documents, never lose context again.</p>
+          </div>
+        </span></li>
+      </ul>
+    </section>
 
-    <h2>📁 Project Architecture</h2>
+    <section>
+      <h2>📂 SmartShot File Architecture</h2>
+      <p>SmartShot maintains a structured approach to tracking your downloads:</p>
+      
+      <div class="highlight-box">
+        <p><strong>history.json</strong> - The structured data file that stores all your download metadata in a machine-readable format, ensuring your history is preserved even if you reinstall the extension.</p>
+      </div>
+      
+      <div class="highlight-box">
+        <p><strong>history.html</strong> - The human-readable dashboard that displays your complete download history in an organized, searchable format, pulling data from the JSON file.</p>
+      </div>
+      
+      <p>This dual-file approach combines the best of both worlds: structured data storage with a beautiful, user-friendly interface.</p>
+    </section>
 
-    <div class="file-explanation">
-      <strong>📄 manifest.json:</strong> The configuration hub of the extension — defines permissions, background behavior, and links all components together.
-    </div>
+    <section>
+      <h2>🚀 Get SmartShot Today</h2>
+      <p>Stop losing track of your downloads and start building an organized, searchable library of images with complete context.</p>
+      
+      <center>
+        <button class="download-btn" onclick="showComingSoon()">Add to Chrome - It's Free!</button>
+      </center>
+      
+      <p>SmartShot is currently in development. Join our waitlist to be notified when we launch!</p>
+      
+      <div class="developer-credit">
+        Developed in the World by <a href="https://github.com/fdev-looper" target="_blank">DNATech</a>
+      </div>
+    </section>
+  </div>
 
-    <div class="file-explanation">
-      <strong>🧠 background.js:</strong> The core engine. Listens to image downloads and logs metadata in Chrome's storage with precision.
-    </div>
-
-    <div class="file-explanation">
-      <strong>🖼️ popup.html + popup.js:</strong> The user interface. View, search, and filter your complete image history directly from the extension popup.
-    </div>
-
-    <h2>🙋 About the Developer</h2>
-    <p>
-      Built with 💻, ☕, and way too many Chrome tabs by <a href="https://github.com/fdev-looper" target="_blank">DNATech (fdev-looper)</a>.  
-    </p>
-    <p>
-      I specialize in creating tools that appear simple but deliver powerful functionality under the hood. SmartShot embodies this philosophy — minimal interface, maximum utility.
-    </p>
-  </section>
-
-  <footer>
-    🚀 SmartShot by <a href="https://github.com/fdev-looper" target="_blank" style="color: #a5d8ff;">fdev-looper</a> • All rights reserved • Made with passion
-  </footer>
-
-  <!-- Floating emoji follower -->
-  <div class="emoji-follower" id="emojiFollower">🧠</div>
-
-  <!-- Coming Soon Popup -->
   <div class="overlay" id="overlay"></div>
+  
   <div class="coming-soon-popup" id="comingSoonPopup">
     <span class="smiley">😊</span>
     <h3>Coming Soon!</h3>
-    <p>SmartShot is currently in development and will be available shortly. Stay tuned for updates!</p>
-    <button class="close-btn" id="closePopupBtn">Got It!</button>
+    <p>SmartShot is currently in active development. We're working hard to bring you the best image tracking experience.</p>
+    <p>Join our waitlist to be the first to know when we launch!</p>
+    <button class="close-btn" onclick="hideComingSoon()">Got It!</button>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const emojiFollower = document.getElementById('emojiFollower');
-      const sections = document.querySelectorAll('h2');
-      const tryNowBtn = document.getElementById('tryNowBtn');
-      const comingSoonPopup = document.getElementById('comingSoonPopup');
-      const overlay = document.getElementById('overlay');
-      const closePopupBtn = document.getElementById('closePopupBtn');
-      
-      let currentEmoji = '🧠';
-      let isMouseMoving = false;
-      let mouseX = 0;
-      let mouseY = 0;
-      
-      // Show sections with scroll animation
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-          }
-        });
-      }, { threshold: 0.1 });
-      
-      document.querySelectorAll('section').forEach(section => {
-        observer.observe(section);
-      });
+  <footer>
+    <p>© 2023 SmartShot Chrome Extension. All rights reserved.</p>
+    <p> Mind behind SmartShort
+      <a href="https://github.com/fdev-looper" target="_blank">fdev-looper</a></p>
+  </footer>
 
-      // Emoji mapping for different sections
-      const emojiMap = {
-        'What is SmartShot': '🧠',
-        'Why SmartShot Exists': '🔍',
-        'Project Architecture': '📁',
-        'About the Developer': '🙋'
-      };
+  <script>
+    // Floating emoji follower
+    document.addEventListener('mousemove', function(e) {
+      const follower = document.querySelector('.emoji-follower');
+      follower.style.left = e.pageX + 'px';
+      follower.style.top = e.pageY + 'px';
       
-      // Position feature cards relative to their triggers
-      document.querySelectorAll('.feature-highlight').forEach(feature => {
-        const card = feature.querySelector('.feature-card');
-        feature.addEventListener('mouseenter', (e) => {
-          const rect = feature.getBoundingClientRect();
-          const viewportWidth = window.innerWidth;
-          const viewportHeight = window.innerHeight;
-          
-          // Calculate available space
-          const spaceAbove = rect.top;
-          const spaceBelow = viewportHeight - rect.bottom;
-          const spaceLeft = rect.left;
-          const spaceRight = viewportWidth - rect.right;
-          
-          // Position card in the direction with most space
-          if (spaceBelow > spaceAbove && spaceBelow > 200) {
-            // Position below
-            card.style.top = `${rect.bottom + 10}px`;
-          } else if (spaceAbove > 200) {
-            // Position above
-            card.style.top = `${rect.top - card.offsetHeight - 10}px`;
-          } else {
-            // Default to below if not enough space
-            card.style.top = `${rect.bottom + 10}px`;
-          }
-          
-          // Horizontal positioning
-          if (spaceRight > spaceLeft && spaceRight > 300) {
-            // Position to the right
-            card.style.left = `${rect.right + 10}px`;
-          } else if (spaceLeft > 300) {
-            // Position to the left
-            card.style.left = `${rect.left - card.offsetWidth - 10}px`;
-          } else {
-            // Center if not enough space
-            card.style.left = `${viewportWidth/2 - card.offsetWidth/2}px`;
-          }
-          
-          // Ensure card stays within viewport
-          const cardRect = card.getBoundingClientRect();
-          if (cardRect.right > viewportWidth) {
-            card.style.left = `${viewportWidth - card.offsetWidth - 20}px`;
-          }
-          if (cardRect.left < 0) {
-            card.style.left = '20px';
-          }
-          if (cardRect.bottom > viewportHeight) {
-            card.style.top = `${viewportHeight - card.offsetHeight - 20}px`;
-          }
-          if (cardRect.top < 0) {
-            card.style.top = '20px';
-          }
-          
-          card.style.opacity = '1';
-          card.style.transform = 'scale(1)';
-        });
-        
-        feature.addEventListener('mouseleave', () => {
-          card.style.opacity = '0';
-          card.style.transform = 'scale(0.95)';
-        });
-      });
+      // Random emoji based on position
+      const emojis = ['🖼️', '📷', '🔍', '📥', '🧠', '✨', '🌟', '💡'];
+      const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+      follower.textContent = randomEmoji;
+      follower.classList.add('active');
       
-      // Try Now button click handler
-      tryNowBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        comingSoonPopup.classList.add('active');
-        overlay.classList.add('active');
-      });
-      
-      // Close popup handlers
-      closePopupBtn.addEventListener('click', () => {
-        comingSoonPopup.classList.remove('active');
-        overlay.classList.remove('active');
-      });
-      
-      overlay.addEventListener('click', () => {
-        comingSoonPopup.classList.remove('active');
-        overlay.classList.remove('active');
-      });
-      
-      // Update emoji based on scroll position
-      function updateEmoji() {
-        const scrollPosition = window.scrollY + (window.innerHeight / 3);
-        let activeSection = null;
-        
-        sections.forEach(section => {
-          const sectionTop = section.offsetTop;
-          const sectionHeight = section.offsetHeight;
-          
-          if (scrollPosition >= sectionTop && scrollPosition <= sectionTop + sectionHeight) {
-            activeSection = section;
-          }
-        });
-        
-        if (activeSection) {
-          const sectionText = activeSection.textContent.replace(/[🧠🔍📁🙋]\s*/, '');
-          const newEmoji = emojiMap[sectionText] || '🧠';
-          
-          if (newEmoji !== currentEmoji) {
-            currentEmoji = newEmoji;
-            emojiFollower.textContent = currentEmoji;
-          }
+      setTimeout(() => {
+        follower.classList.remove('active');
+      }, 3000);
+    });
+
+    // Show coming soon popup
+    function showComingSoon() {
+      document.getElementById('overlay').classList.add('active');
+      document.getElementById('comingSoonPopup').classList.add('active');
+    }
+
+    // Hide coming soon popup
+    function hideComingSoon() {
+      document.getElementById('overlay').classList.remove('active');
+      document.getElementById('comingSoonPopup').classList.remove('active');
+    }
+
+    // Intersection Observer for scroll animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
         }
-      }
-      
-      // Follow mouse
-      document.addEventListener('mousemove', function(e) {
-        isMouseMoving = true;
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-        emojiFollower.style.left = mouseX + 'px';
-        emojiFollower.style.top = mouseY + 'px';
-        
-        if (!emojiFollower.classList.contains('active')) {
-          emojiFollower.classList.add('active');
-        }
-        
-        // Reset the mouse movement flag after a short delay
-        clearTimeout(window.mouseMoveTimeout);
-        window.mouseMoveTimeout = setTimeout(() => {
-          isMouseMoving = false;
-        }, 1000);
       });
-      
-      // Update emoji on scroll and show follower
-      window.addEventListener('scroll', function() {
-        updateEmoji();
-        
-        if (!isMouseMoving) {
-          emojiFollower.style.left = (window.innerWidth - 50) + 'px';
-          emojiFollower.style.top = (window.scrollY + 50) + 'px';
-          emojiFollower.classList.add('active');
-        }
-        
-        clearTimeout(window.scrollTimeout);
-        window.scrollTimeout = setTimeout(() => {
-          if (!isMouseMoving) {
-            emojiFollower.classList.remove('active');
-          }
-        }, 2000);
-      });
-      
-      // Initial update
-      updateEmoji();
-      
-      // Show emoji when mouse enters window
-      document.addEventListener('mouseenter', function() {
-        emojiFollower.classList.add('active');
-      });
-      
-      // Hide emoji when mouse leaves window
-      document.addEventListener('mouseleave', function() {
-        emojiFollower.classList.remove('active');
-      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('section').forEach(section => {
+      observer.observe(section);
     });
   </script>
 </body>
