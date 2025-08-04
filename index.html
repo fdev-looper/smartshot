@@ -323,6 +323,8 @@
       pointer-events: none;
       border: 1px solid rgba(0,0,0,0.05);
       transform: scale(0.95);
+      max-height: 80vh;
+      overflow-y: auto;
     }
 
     .feature-highlight:hover {
@@ -376,7 +378,7 @@
     }
 
     .download-btn::after {
-      content: 'Coming Soon 😊';
+      content: 'Try Now!';
       position: absolute;
       top: 0;
       left: 0;
@@ -386,16 +388,100 @@
       align-items: center;
       justify-content: center;
       background: var(--primary);
-      transition: transform 0.3s ease;
+      transition: all 0.3s ease;
     }
 
     .download-btn:hover::after {
-      animation: dance 0.5s infinite alternate;
+      animation: pulse 0.8s infinite alternate;
+      text-shadow: 0 0 10px rgba(255,255,255,0.8);
+    }
+
+    /* Coming Soon Popup */
+    .coming-soon-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      text-align: center;
+      max-width: 300px;
+      width: 90%;
+    }
+
+    .coming-soon-popup.active {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      pointer-events: auto;
+    }
+
+    .coming-soon-popup .smiley {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      display: block;
+      animation: dance 1s infinite alternate;
+    }
+
+    .coming-soon-popup h3 {
+      margin-top: 0;
+      color: var(--primary);
+    }
+
+    .coming-soon-popup p {
+      margin-bottom: 20px;
+    }
+
+    .coming-soon-popup .close-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .coming-soon-popup .close-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.05); }
     }
 
     @keyframes dance {
-      from { transform: translateY(0) rotate(-2deg); }
-      to { transform: translateY(-3px) rotate(2deg); }
+      0% { transform: rotate(-10deg); }
+      25% { transform: rotate(10deg) scale(1.1); }
+      50% { transform: rotate(-5deg) scale(1.05); }
+      75% { transform: rotate(5deg) scale(1.1); }
+      100% { transform: rotate(0deg) scale(1); }
     }
 
     @media (max-width: 768px) {
@@ -426,6 +512,10 @@
       
       .feature-highlight:hover .feature-card {
         transform: translateX(-50%) scale(1) !important;
+      }
+
+      .coming-soon-popup {
+        padding: 20px;
       }
     }
   </style>
@@ -531,7 +621,7 @@
     </ul>
 
     <div style="text-align: center;">
-      <a href="#" class="download-btn">Download Now</a>
+      <a href="#" class="download-btn" id="tryNowBtn">Download Now</a>
     </div>
 
     <h2>📁 Project Architecture</h2>
@@ -564,10 +654,24 @@
   <!-- Floating emoji follower -->
   <div class="emoji-follower" id="emojiFollower">🧠</div>
 
+  <!-- Coming Soon Popup -->
+  <div class="overlay" id="overlay"></div>
+  <div class="coming-soon-popup" id="comingSoonPopup">
+    <span class="smiley">😊</span>
+    <h3>Coming Soon!</h3>
+    <p>SmartShot is currently in development and will be available shortly. Stay tuned for updates!</p>
+    <button class="close-btn" id="closePopupBtn">Got It!</button>
+  </div>
+
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const emojiFollower = document.getElementById('emojiFollower');
       const sections = document.querySelectorAll('h2');
+      const tryNowBtn = document.getElementById('tryNowBtn');
+      const comingSoonPopup = document.getElementById('comingSoonPopup');
+      const overlay = document.getElementById('overlay');
+      const closePopupBtn = document.getElementById('closePopupBtn');
+      
       let currentEmoji = '🧠';
       let isMouseMoving = false;
       let mouseX = 0;
@@ -600,19 +704,36 @@
         feature.addEventListener('mouseenter', (e) => {
           const rect = feature.getBoundingClientRect();
           const viewportWidth = window.innerWidth;
+          const viewportHeight = window.innerHeight;
           
-          // Position card above or below depending on position
-          if (rect.top > window.innerHeight / 2) {
+          // Calculate available space
+          const spaceAbove = rect.top;
+          const spaceBelow = viewportHeight - rect.bottom;
+          const spaceLeft = rect.left;
+          const spaceRight = viewportWidth - rect.right;
+          
+          // Position card in the direction with most space
+          if (spaceBelow > spaceAbove && spaceBelow > 200) {
+            // Position below
+            card.style.top = `${rect.bottom + 10}px`;
+          } else if (spaceAbove > 200) {
+            // Position above
             card.style.top = `${rect.top - card.offsetHeight - 10}px`;
           } else {
+            // Default to below if not enough space
             card.style.top = `${rect.bottom + 10}px`;
           }
           
-          // Position card left or right depending on position
-          if (rect.left > viewportWidth / 2) {
-            card.style.left = `${rect.right - card.offsetWidth}px`;
+          // Horizontal positioning
+          if (spaceRight > spaceLeft && spaceRight > 300) {
+            // Position to the right
+            card.style.left = `${rect.right + 10}px`;
+          } else if (spaceLeft > 300) {
+            // Position to the left
+            card.style.left = `${rect.left - card.offsetWidth - 10}px`;
           } else {
-            card.style.left = `${rect.left}px`;
+            // Center if not enough space
+            card.style.left = `${viewportWidth/2 - card.offsetWidth/2}px`;
           }
           
           // Ensure card stays within viewport
@@ -623,7 +744,39 @@
           if (cardRect.left < 0) {
             card.style.left = '20px';
           }
+          if (cardRect.bottom > viewportHeight) {
+            card.style.top = `${viewportHeight - card.offsetHeight - 20}px`;
+          }
+          if (cardRect.top < 0) {
+            card.style.top = '20px';
+          }
+          
+          card.style.opacity = '1';
+          card.style.transform = 'scale(1)';
         });
+        
+        feature.addEventListener('mouseleave', () => {
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.95)';
+        });
+      });
+      
+      // Try Now button click handler
+      tryNowBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        comingSoonPopup.classList.add('active');
+        overlay.classList.add('active');
+      });
+      
+      // Close popup handlers
+      closePopupBtn.addEventListener('click', () => {
+        comingSoonPopup.classList.remove('active');
+        overlay.classList.remove('active');
+      });
+      
+      overlay.addEventListener('click', () => {
+        comingSoonPopup.classList.remove('active');
+        overlay.classList.remove('active');
       });
       
       // Update emoji based on scroll position
