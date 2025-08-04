@@ -284,6 +284,48 @@
       line-height: 1.7;
     }
 
+    /* New Feature Card Styles */
+    .feature-highlight {
+      position: relative;
+      display: inline-block;
+    }
+
+    .feature-card {
+      position: absolute;
+      width: 300px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      padding: 20px;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      border: 1px solid var(--light-gray);
+      transform: translateY(10px);
+    }
+
+    .feature-highlight:hover .feature-card {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .feature-card h3 {
+      margin-top: 0;
+      color: var(--primary);
+      font-size: 1.2rem;
+    }
+
+    .feature-card p {
+      margin-bottom: 0;
+      font-size: 0.9rem;
+    }
+
+    .feature-highlight {
+      border-bottom: 2px dotted var(--primary);
+      cursor: help;
+    }
+
     @media (max-width: 768px) {
       section {
         padding: 25px;
@@ -303,6 +345,16 @@
         height: 60px;
         width: 60px;
       }
+
+      .feature-card {
+        width: 250px;
+        left: 50%;
+        transform: translateX(-50%) translateY(10px);
+      }
+      
+      .feature-highlight:hover .feature-card {
+        transform: translateX(-50%) translateY(0);
+      }
     }
   </style>
 </head>
@@ -312,9 +364,7 @@
     <div class="header-content">
       <h1>
         <div class="logo-container">
-         
          <img src="./Smartshot logo.png" alt="SmartShot Logo" />
-
           <span class="rocket rocket-1">🚀</span>
           <span class="rocket rocket-2">🚀</span>
           <span class="rocket rocket-3">🚀</span>
@@ -336,10 +386,30 @@
     </div>
     
     <ul>
-      <li>🖼️ The filename of the image</li>
-      <li>🌐 The source URL of the image</li>
-      <li>🧾 The tab title and tab URL at download time</li>
-      <li>⏱️ The exact timestamp of when it was downloaded</li>
+      <li><span class="feature-highlight">🖼️ The filename of the image
+        <div class="feature-card">
+          <h3>Filename Tracking</h3>
+          <p>SmartShot records the exact filename of every image you download, including automatically captured screenshots.</p>
+        </div>
+      </span></li>
+      <li><span class="feature-highlight">🌐 The source URL of the image
+        <div class="feature-card">
+          <h3>Source URL Preservation</h3>
+          <p>Never lose track of where an image came from. SmartShot saves the direct URL of every downloaded image.</p>
+        </div>
+      </span></li>
+      <li><span class="feature-highlight">🧾 The tab title and tab URL at download time
+        <div class="feature-card">
+          <h3>Context Capture</h3>
+          <p>SmartShot remembers which webpage you were on when you downloaded the image, preserving valuable context.</p>
+        </div>
+      </span></li>
+      <li><span class="feature-highlight">⏱️ The exact timestamp of when it was downloaded
+        <div class="feature-card">
+          <h3>Precise Timestamps</h3>
+          <p>Every download is logged with the exact date and time, making it easy to organize and find your images.</p>
+        </div>
+      </span></li>
     </ul>
 
     <p>
@@ -362,10 +432,30 @@
       It's great for:
     </p>
     <ul>
-      <li>🧑‍💻 Developers capturing UI screenshots</li>
-      <li>👩‍🏫 Teachers or trainers saving examples</li>
-      <li>👨‍🔬 Researchers collecting image-based data</li>
-      <li>😎 Casual users who want control over their downloads</li>
+      <li><span class="feature-highlight">🧑‍💻 Developers capturing UI screenshots
+        <div class="feature-card">
+          <h3>Developer Friendly</h3>
+          <p>Perfect for developers who need to track UI references, design inspirations, or bug screenshots.</p>
+        </div>
+      </span></li>
+      <li><span class="feature-highlight">👩‍🏫 Teachers or trainers saving examples
+        <div class="feature-card">
+          <h3>Education Use</h3>
+          <p>Great for educators collecting visual materials for lessons, presentations, or student feedback.</p>
+        </div>
+      </span></li>
+      <li><span class="feature-highlight">👨‍🔬 Researchers collecting image-based data
+        <div class="feature-card">
+          <h3>Research Tool</h3>
+          <p>Essential for researchers who need to maintain accurate records of visual references and sources.</p>
+        </div>
+      </span></li>
+      <li><span class="feature-highlight">😎 Casual users who want control over their downloads
+        <div class="feature-card">
+          <h3>Everyone Benefits</h3>
+          <p>Whether you're saving memes, inspiration, or important references, SmartShot keeps everything organized.</p>
+        </div>
+      </span></li>
     </ul>
 
     <h2>📁 Project Architecture</h2>
@@ -414,6 +504,16 @@
         'Project Architecture': '📁',
         'About the Developer': '🙋'
       };
+      
+      // Position feature cards relative to their triggers
+      document.querySelectorAll('.feature-highlight').forEach(feature => {
+        const card = feature.querySelector('.feature-card');
+        feature.addEventListener('mouseenter', () => {
+          const rect = feature.getBoundingClientRect();
+          card.style.left = `${rect.left}px`;
+          card.style.top = `${rect.bottom + 5}px`;
+        });
+      });
       
       // Update emoji based on scroll position
       function updateEmoji() {
