@@ -13,7 +13,7 @@ Chrome's built-in tools or normal screenshot apps don’t give you a unified, se
 - **Searchable History**: Find past actions by time, type, and filename.
 - **Efficiency for Users**: Perfect for developers, students, and anyone who takes frequent screenshots or downloads files.
 
-Tech reviewers say screenshot extensions excel when they’re fast, simple to access in-browser, and lightweight without bloating your workflow :contentReference[oaicite:1]{index=1}. That’s exactly where SmartShot fits.
+Tech reviewers say screenshot extensions excel when they’re fast, simple to access in-browser, and lightweight without bloating your workflow . That’s exactly where SmartShot fits.
 
 ---
 
