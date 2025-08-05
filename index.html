@@ -42,6 +42,126 @@
       min-height: 100vh;
     }
 
+    /* Camera Intro Styles */
+    .camera-intro {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 0.8s ease;
+    }
+
+    .camera-intro.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .camera-flash {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      opacity: 0;
+      z-index: 10001;
+    }
+
+    .camera-flash.flash {
+      animation: cameraFlash 0.3s ease-out;
+    }
+
+    @keyframes cameraFlash {
+      0% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .camera-icon {
+      font-size: 6rem;
+      color: #fff;
+      margin-bottom: 2rem;
+      animation: cameraZoom 2s ease-out;
+    }
+
+    @keyframes cameraZoom {
+      0% { 
+        transform: scale(0.5);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .snapshot-text {
+      color: #fff;
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      opacity: 0;
+      animation: typewriter 2s steps(20) 0.5s forwards;
+      border-right: 3px solid #4361ee;
+      padding-right: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      width: 0;
+    }
+
+    @keyframes typewriter {
+      0% {
+        width: 0;
+        opacity: 1;
+      }
+      90% {
+        border-color: #4361ee;
+      }
+      100% {
+        width: 100%;
+        opacity: 1;
+        border-color: transparent;
+      }
+    }
+
+    .dnatech-brand {
+      background: linear-gradient(45deg, #4361ee, #f72585);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from { 
+        filter: drop-shadow(0 0 20px rgba(67, 97, 238, 0.5));
+      }
+      to { 
+        filter: drop-shadow(0 0 30px rgba(247, 37, 133, 0.7));
+      }
+    }
+
+    /* Main content initially hidden */
+    .main-content {
+      opacity: 0;
+      transition: opacity 1s ease-in;
+    }
+
+    .main-content.show {
+      opacity: 1;
+    }
+
     /* Animated Background */
     .bg-animation {
       position: fixed;
@@ -183,7 +303,7 @@
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(20px);
       color: var(--dark);
-      padding: 100px 20px 80px;
+      padding: 80px 20px 60px;
       text-align: center;
       position: relative;
       overflow: hidden;
@@ -198,14 +318,15 @@
     }
 
     header h1 {
-      font-size: 3.5rem;
+      font-size: 3rem;
       margin-bottom: 20px;
       font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 25px;
+      gap: 20px;
       text-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      flex-wrap: wrap;
     }
 
     .logo-container {
@@ -214,8 +335,8 @@
     }
 
     header h1 img {
-      height: 85px;
-      width: 85px;
+      height: 70px;
+      width: 70px;
       border-radius: 20px;
       object-fit: cover;
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -232,7 +353,7 @@
     }
 
     .title-text {
-      font-size: 3.5rem;
+      font-size: 3rem;
       font-weight: 800;
       margin: 0;
       line-height: 1;
@@ -244,16 +365,16 @@
 
     .rocket {
       position: absolute;
-      font-size: 28px;
+      font-size: 24px;
       opacity: 0;
       transition: all 0.5s ease;
       pointer-events: none;
       filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));
     }
 
-    .rocket-1 { right: -50px; top: -30px; }
-    .rocket-2 { right: -60px; top: 15px; }
-    .rocket-3 { right: -45px; top: 55px; }
+    .rocket-1 { right: -40px; top: -25px; }
+    .rocket-2 { right: -50px; top: 10px; }
+    .rocket-3 { right: -35px; top: 45px; }
 
     header h1:hover .rocket-1 { animation: fly1 3s ease-in-out forwards; }
     header h1:hover .rocket-2 { animation: fly2 3.2s ease-in-out 0.3s forwards; }
@@ -278,7 +399,7 @@
     }
 
     header p {
-      font-size: 1.4rem;
+      font-size: 1.2rem;
       max-width: 700px;
       margin: 0 auto;
       opacity: 0.8;
@@ -294,9 +415,9 @@
     }
 
     section {
-      padding: 60px 40px;
+      padding: 50px 30px;
       max-width: 1100px;
-      margin: 40px auto;
+      margin: 30px auto;
       background: rgba(255, 255, 255, 0.98);
       backdrop-filter: blur(20px);
       box-shadow: var(--shadow-medium);
@@ -315,9 +436,9 @@
     h2 {
       color: var(--dark);
       font-weight: 700;
-      font-size: 2.2rem;
-      margin-top: 60px;
-      margin-bottom: 30px;
+      font-size: 2rem;
+      margin-top: 50px;
+      margin-bottom: 25px;
       padding-bottom: 15px;
       border-bottom: 3px solid var(--light-gray);
       position: relative;
@@ -341,16 +462,16 @@
     /* Enhanced Cards */
     .feature-cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 25px;
-      margin: 40px 0;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
     }
 
     .feature-card-static {
       background: white;
       border: 1px solid rgba(0,0,0,0.05);
       border-radius: 16px;
-      padding: 30px;
+      padding: 25px;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: var(--shadow-light);
       position: relative;
@@ -374,16 +495,16 @@
     }
 
     .feature-card-static .feature-icon {
-      font-size: 2.5rem;
-      margin-bottom: 20px;
+      font-size: 2.2rem;
+      margin-bottom: 15px;
       display: block;
       color: var(--primary);
     }
 
     .feature-card-static h3 {
       color: var(--primary);
-      font-size: 1.3rem;
-      margin-bottom: 15px;
+      font-size: 1.2rem;
+      margin-bottom: 12px;
       font-weight: 600;
     }
 
@@ -391,18 +512,19 @@
       color: var(--gray);
       line-height: 1.6;
       margin: 0;
+      font-size: 14px;
     }
 
     /* Comparison Section */
     .comparison-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 30px;
-      margin: 40px 0;
+      gap: 25px;
+      margin: 30px 0;
     }
 
     .comparison-card {
-      padding: 30px;
+      padding: 25px;
       border-radius: 20px;
       position: relative;
       overflow: hidden;
@@ -420,12 +542,12 @@
     }
 
     .comparison-card h3 {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
+      font-size: 1.3rem;
+      margin-bottom: 15px;
       font-weight: 700;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .comparison-card.traditional h3 {
@@ -442,17 +564,18 @@
     }
 
     .comparison-card li {
-      padding: 10px 0;
+      padding: 8px 0;
       position: relative;
-      padding-left: 35px;
+      padding-left: 30px;
       line-height: 1.6;
+      font-size: 14px;
     }
 
     .comparison-card.traditional li::before {
       content: "❌";
       position: absolute;
       left: 0;
-      font-size: 1.2rem;
+      font-size: 1rem;
       color: #ee5a6f;
     }
 
@@ -460,7 +583,7 @@
       content: "✅";
       position: absolute;
       left: 0;
-      font-size: 1.2rem;
+      font-size: 1rem;
       color: var(--primary);
     }
 
@@ -476,11 +599,11 @@
 
     .feature-card {
       position: fixed;
-      width: 320px;
+      width: 300px;
       background: white;
       border-radius: 16px;
       box-shadow: var(--shadow-heavy);
-      padding: 20px;
+      padding: 18px;
       z-index: 1000;
       opacity: 0;
       visibility: hidden;
@@ -491,7 +614,7 @@
       max-height: 80vh;
       overflow-y: auto;
       top: 100px;
-      right: 50px;
+      right: 20px;
     }
 
     .feature-highlight:hover {
@@ -509,14 +632,14 @@
     .feature-card h3 {
       margin-top: 0;
       color: var(--primary);
-      font-size: 1.2rem;
-      margin-bottom: 10px;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
       font-weight: 600;
     }
 
     .feature-card p {
       margin-bottom: 0;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       line-height: 1.6;
       color: var(--gray);
     }
@@ -526,8 +649,8 @@
       background: white;
       border: 1px solid rgba(67, 97, 238, 0.2);
       border-radius: 16px;
-      padding: 30px;
-      margin: 40px 0;
+      padding: 25px;
+      margin: 30px 0;
       position: relative;
       overflow: hidden;
       box-shadow: var(--shadow-light);
@@ -545,7 +668,7 @@
 
     .highlight-box p {
       margin: 0;
-      font-size: 1.1rem;
+      font-size: 1rem;
       line-height: 1.8;
       font-weight: 500;
       color: var(--dark);
@@ -556,16 +679,16 @@
       display: inline-block;
       background: var(--gradient-primary);
       color: white;
-      padding: 18px 40px;
+      padding: 16px 35px;
       border-radius: 50px;
       font-weight: 600;
       text-decoration: none;
-      margin: 40px 0;
+      margin: 30px 0;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 8px 25px rgba(67, 97, 238, 0.3);
       position: relative;
       overflow: hidden;
-      font-size: 1.1rem;
+      font-size: 1rem;
       border: none;
       cursor: pointer;
     }
@@ -597,7 +720,7 @@
       left: 50%;
       transform: translate(-50%, -50%) scale(0.8);
       background: white;
-      padding: 40px;
+      padding: 35px;
       border-radius: 24px;
       box-shadow: var(--shadow-heavy);
       z-index: 2000;
@@ -605,7 +728,7 @@
       pointer-events: none;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       text-align: center;
-      max-width: 400px;
+      max-width: 380px;
       width: 90%;
       border: 1px solid rgba(0,0,0,0.1);
     }
@@ -617,8 +740,8 @@
     }
 
     .coming-soon-popup .smiley {
-      font-size: 4rem;
-      margin-bottom: 20px;
+      font-size: 3.5rem;
+      margin-bottom: 15px;
       display: block;
       animation: dance 1s infinite alternate;
       filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));
@@ -627,26 +750,27 @@
     .coming-soon-popup h3 {
       margin-top: 0;
       color: var(--primary);
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       font-weight: 700;
     }
 
     .coming-soon-popup p {
-      margin-bottom: 25px;
+      margin-bottom: 20px;
       color: var(--gray);
       line-height: 1.6;
+      font-size: 14px;
     }
 
     .coming-soon-popup .close-btn {
       background: var(--gradient-primary);
       color: white;
       border: none;
-      padding: 12px 30px;
+      padding: 10px 25px;
       border-radius: 50px;
       cursor: pointer;
       font-weight: 600;
       transition: all 0.3s ease;
-      font-size: 1rem;
+      font-size: 0.95rem;
     }
 
     .coming-soon-popup .close-btn:hover {
@@ -675,10 +799,10 @@
 
     /* Enhanced footer */
     footer {
-      margin-top: 80px;
+      margin-top: 60px;
       text-align: center;
-      padding: 40px;
-      font-size: 16px;
+      padding: 35px;
+      font-size: 14px;
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(20px);
       color: var(--gray);
@@ -692,16 +816,16 @@
     }
 
     li {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       position: relative;
-      padding-left: 35px;
+      padding-left: 30px;
     }
 
     li::before {
       content: "✨";
       position: absolute;
       left: 0;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       color: var(--primary);
     }
 
@@ -722,18 +846,18 @@
       display: inline-block;
       background: var(--gradient-secondary);
       color: white;
-      font-size: 0.75rem;
-      padding: 4px 8px;
-      border-radius: 12px;
+      font-size: 0.7rem;
+      padding: 3px 6px;
+      border-radius: 10px;
       font-weight: 600;
-      margin-left: 8px;
+      margin-left: 6px;
       animation: pulse 2s infinite;
     }
 
     /* Developer Credit */
     .developer-credit {
-      margin-top: 20px;
-      font-size: 0.9rem;
+      margin-top: 15px;
+      font-size: 0.85rem;
       color: var(--gray);
     }
 
@@ -758,269 +882,431 @@
 
     /* Responsive Design */
     @media (max-width: 768px) {
+      .camera-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .snapshot-text {
+        font-size: 1.5rem;
+        padding: 0 20px;
+      }
+
       section {
-        padding: 40px 25px;
+        padding: 30px 20px;
         margin: 20px 15px;
       }
       
       header {
-        padding: 80px 20px 60px;
+        padding: 60px 20px 40px;
       }
       
       header h1 {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         gap: 15px;
         flex-direction: column;
       }
       
       .title-text {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
       }
       
       header h1 img {
-        height: 70px;
-        width: 70px;
-        margin-bottom: 15px;
+        height: 60px;
+        width: 60px;
+        margin-bottom: 10px;
+      }
+
+      header p {
+        font-size: 1.1rem;
+      }
+
+      h2 {
+        font-size: 1.7rem;
+        margin-top: 30px;
+        margin-bottom: 20px;
+      }
+
+      .feature-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+
+      .feature-card-static {
+        padding: 20px;
       }
 
       .feature-card {
-        width: 300px;
+        width: calc(100vw - 40px);
         right: 20px;
+        left: 20px;
+        max-width: 300px;
       }
 
       .comparison-container {
         grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .comparison-card {
+        padding: 20px;
+      }
+
+      .highlight-box {
+        padding: 20px;
+        margin: 20px 0;
+      }
+
+      .highlight-box p {
+        font-size: 0.95rem;
+      }
+
+      .download-btn {
+        padding: 14px 30px;
+        font-size: 0.95rem;
+      }
+
+      .coming-soon-popup {
+        padding: 25px;
+        max-width: 320px;
+      }
+
+      .coming-soon-popup h3 {
+        font-size: 1.2rem;
+      }
+
+      .rocket-1, .rocket-2, .rocket-3 {
+        font-size: 20px;
+      }
+
+      .rocket-1 { right: -30px; top: -20px; }
+      .rocket-2 { right: -35px; top: 8px; }
+      .rocket-3 { right: -25px; top: 35px; }
+    }
+
+    @media (max-width: 480px) {
+      .camera-icon {
+        font-size: 3rem;
+      }
+
+      .snapshot-text {
+        font-size: 1.2rem;
+      }
+
+      header h1 {
+        font-size: 1.8rem;
+      }
+      
+      .title-text {
+        font-size: 1.8rem;
+      }
+
+      header h1 img {
+        height: 50px;
+        width: 50px;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      .feature-card-static h3 {
+        font-size: 1.1rem;
+      }
+
+      .feature-card-static p {
+        font-size: 13px;
+      }
+
+      .comparison-card h3 {
+        font-size: 1.1rem;
+      }
+
+      .comparison-card li {
+        font-size: 13px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="bg-animation"></div>
-  <div class="bubbles">
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-  </div>
-  <div class="emoji-follower"></div>
-
-  <header>
-    <div class="header-content">
-      <h1>
-        <div class="logo-container">
-         <img src="Smartshot logo.png" alt="SmartShot Logo" width="85" height="85" />
-
-          <span class="rocket rocket-1">🚀</span>
-          <span class="rocket rocket-2">🚀</span>
-          <span class="rocket rocket-3">🚀</span>
-        </div>
-        <span class="title-text">SmartShot</span>
-      </h1>
-      <p>Your intelligent companion for tracking every image download — with complete context, always.</p>
+  <!-- Camera Intro Screen -->
+  <div class="camera-intro" id="cameraIntro">
+    <div class="camera-flash" id="cameraFlash"></div>
+    <div class="camera-icon">📸</div>
+    <div class="snapshot-text">
+      Snapshotted by <span class="dnatech-brand">DNATech</span>
     </div>
-  </header>
+  </div>
 
-  <div class="main-container">
-    <section>
-      <h2>🧠 What is SmartShot?</h2>
-      <p>
-        <strong>SmartShot</strong> is a revolutionary Chrome extension that transforms how you manage image downloads. Unlike traditional file managers, SmartShot captures the complete story behind every image.
-      </p>
-      
-      <div class="highlight-box">
-        <p>Whether you're collecting memes, reference images, research graphics, or saving design inspiration — SmartShot quietly logs crucial metadata that Windows Explorer simply can't provide:</p>
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+    <div class="bg-animation"></div>
+    <div class="bubbles">
+      <div class="bubble"></div>
+      <div class="bubble"></div>
+      <div class="bubble"></div>
+      <div class="bubble"></div>
+      <div class="bubble"></div>
+      <div class="bubble"></div>
+      <div class="bubble"></div>
+      <div class="bubble"></div>
+    </div>
+    <div class="emoji-follower"></div>
+
+    <header>
+      <div class="header-content">
+        <h1>
+          <div class="logo-container">
+           <img src="https://via.placeholder.com/70x70/4361ee/ffffff?text=SS" alt="SmartShot Logo" width="70" height="70" />
+            <span class="rocket rocket-1">🚀</span>
+            <span class="rocket rocket-2">🚀</span>
+            <span class="rocket rocket-3">🚀</span>
+          </div>
+          <span class="title-text">SmartShot</span>
+        </h1>
+        <p>Your intelligent companion for tracking every image download — with complete context, always.</p>
       </div>
-      
-      <div class="feature-cards-grid">
-        <div class="feature-card-static">
-          <span class="feature-icon">🖼️</span>
-          <h3>Smart Filename Tracking</h3>
-          <p>Records exact filenames with intelligent cleanup, removing unnecessary timestamps while preserving meaningful names.</p>
+    </header>
+
+    <div class="main-container">
+      <section>
+        <h2>🧠 What is SmartShot?</h2>
+        <p>
+          <strong>SmartShot</strong> is a revolutionary Chrome extension that transforms how you manage image downloads. Unlike traditional file managers, SmartShot captures the complete story behind every image.
+        </p>
+        
+        <div class="highlight-box">
+          <p>Whether you're collecting memes, reference images, research graphics, or saving design inspiration — SmartShot quietly logs crucial metadata that Windows Explorer simply can't provide:</p>
         </div>
-        <div class="feature-card-static">
-          <span class="feature-icon">🌐</span>
-          <h3>Source URL Preservation</h3>
-          <p>Never lose track of where an image originated. Direct URLs are saved for easy back-tracking to original sources.</p>
+        
+        <div class="feature-cards-grid">
+          <div class="feature-card-static">
+            <span class="feature-icon">🖼️</span>
+            <h3>Smart Filename Tracking</h3>
+            <p>Records exact filenames with intelligent cleanup, removing unnecessary timestamps while preserving meaningful names.</p>
+          </div>
+          <div class="feature-card-static">
+            <span class="feature-icon">🌐</span>
+            <h3>Source URL Preservation</h3>
+            <p>Never lose track of where an image originated. Direct URLs are saved for easy back-tracking to original sources.</p>
+          </div>
+          <div class="feature-card-static">
+            <span class="feature-icon">🧾</span>
+            <h3>Complete Context Capture</h3>
+            <p>Preserves the webpage title and URL where you found the image, maintaining valuable context that explains why you saved it.</p>
+          </div>
+          <div class="feature-card-static">
+            <span class="feature-icon">⏱️</span>
+            <h3>Precise Timestamps</h3>
+            <p>Every download logged with exact date and time, enabling powerful chronological organization and search.</p>
+          </div>
         </div>
-        <div class="feature-card-static">
-          <span class="feature-icon">🧾</span>
-          <h3>Complete Context Capture</h3>
-          <p>Preserves the webpage title and URL where you found the image, maintaining valuable context that explains why you saved it.</p>
+
+        <p>
+          It's like having a digital memory for your downloads — perfect for curious minds, content creators, researchers, and anyone who values organization.
+        </p>
+
+        <h2>🆚 SmartShot vs Traditional File Management</h2>
+        <div class="comparison-container">
+          <div class="comparison-card traditional">
+            <h3>😔 Traditional Windows Directory</h3>
+            <ul>
+              <li>Just filename and date</li>
+              <li>No source information</li>
+              <li>No context about why you saved it</li>
+              <li>Mystery files everywhere</li>
+              <li>Manual organization required</li>
+              <li>Difficult to find specific images</li>
+            </ul>
+          </div>
+          <div class="comparison-card smartshot">
+            <h3>🎉 SmartShot Intelligence</h3>
+            <ul>
+              <li>Complete download history with metadata</li>
+              <li>Source website and direct image URL</li>
+              <li>Full context of when and why you saved it</li>
+              <li>Searchable and filterable records</li>
+              <li>Automatic smart organization</li>
+              <li>Instant context recall for any image</li>
+            </ul>
+          </div>
         </div>
-        <div class="feature-card-static">
-          <span class="feature-icon">⏱️</span>
-          <h3>Precise Timestamps</h3>
-          <p>Every download logged with exact date and time, enabling powerful chronological organization and search.</p>
+      </section>
+
+      <section>
+        <h2>🔍 Why SmartShot Exists</h2>
+        <p>
+          Ever stared at a folder full of images thinking <em>"Where did I get this from?"</em> or <em>"Why did I save this?"</em> You're not alone. Traditional file systems are great for storage but terrible for context.
+        </p>
+        
+        <div class="highlight-box">
+          <p>SmartShot solves the fundamental problem: <strong>"I know I saved this image for a reason, but what was it?"</strong> — providing instant answers through intelligent metadata tracking.</p>
         </div>
-      </div>
+        
+        <p>Perfect for diverse use cases:</p>
+        
+        <ul>
+          <li><span class="feature-highlight">🧑‍💻 Developers capturing UI screenshots and design references
+            <div class="feature-card">
+              <h3>Developer Workflow</h3>
+              <p>Track UI inspirations, bug screenshots, and design references with full context of where they came from and what project they relate to.</p>
+            </div>
+          </span></li>
+          <li><span class="feature-highlight">👩‍🏫 Educators collecting visual materials for lessons
+            <div class="feature-card">
+              <h3>Educational Resources</h3>
+              <p>Build comprehensive libraries of educational images with source attribution and context for proper citation and reuse.</p>
+            </div>
+          </span></li>
+          <li><span class="feature-highlight">👨‍🔬 Researchers gathering image-based data and references
+            <div class="feature-card">
+              <h3>Research Documentation</h3>
+              <p>Maintain accurate records of visual references with complete source information for academic integrity and future reference.</p>
+            </div>
+          </span></li>
+          <li><span class="feature-highlight">🎨 Designers collecting inspiration and mood boards
+            <div class="feature-card">
+              <h3>Creative Workflow</h3>
+              <p>Build extensive inspiration libraries with source attribution, making it easy to revisit and credit original creators.</p>
+            </div>
+          </span><span class="new-feature">NEW</span></li>
+          <li><span class="feature-highlight">📱 Social media managers curating content
+            <div class="feature-card">
+              <h3>Content Curation</h3>
+              <p>Track viral images, memes, and trending visuals with complete source information for proper attribution and engagement analysis.</p>
+            </div>
+          </span><span class="new-feature">NEW</span></li>
+          <li><span class="feature-highlight">😎 Anyone who wants organized, contextual downloads
+            <div class="feature-card">
+              <h3>Personal Organization</h3>
+              <p>Whether saving memes, recipes, travel inspiration, or important documents, never lose context again.</p>
+            </div>
+          </span></li>
+        </ul>
+      </section>
 
-      <p>
-        It's like having a digital memory for your downloads — perfect for curious minds, content creators, researchers, and anyone who values organization.
-      </p>
+      <section>
+        <h2>📂 SmartShot File Architecture</h2>
+        <p>SmartShot is more than just a pretty UI — it's a finely-tuned machine made of multiple working parts. Here's how it's structured under the hood:</p>
 
-      <h2>🆚 SmartShot vs Traditional File Management</h2>
-      <div class="comparison-container">
-        <div class="comparison-card traditional">
-          <h3>😔 Traditional Windows Directory</h3>
-          <ul>
-            <li>Just filename and date</li>
-            <li>No source information</li>
-            <li>No context about why you saved it</li>
-            <li>Mystery files everywhere</li>
-            <li>Manual organization required</li>
-            <li>Difficult to find specific images</li>
-          </ul>
+        <div class="highlight-box">
+          <p><strong>manifest.json</strong> – The blueprint of the extension. It defines permissions, background scripts, icons, action popups, and everything Chrome needs to understand SmartShot.</p>
         </div>
-        <div class="comparison-card smartshot">
-          <h3>🎉 SmartShot Intelligence</h3>
-          <ul>
-            <li>Complete download history with metadata</li>
-            <li>Source website and direct image URL</li>
-            <li>Full context of when and why you saved it</li>
-            <li>Searchable and filterable records</li>
-            <li>Automatic smart organization</li>
-            <li>Instant context recall for any image</li>
-          </ul>
+
+        <div class="highlight-box">
+          <p><strong>popup.html</strong> – The extension's control center. It provides a lightweight interface users interact with when clicking the Chrome extension icon.</p>
         </div>
-      </div>
-    </section>
 
-    <section>
-      <h2>🔍 Why SmartShot Exists</h2>
-      <p>
-        Ever stared at a folder full of images thinking <em>"Where did I get this from?"</em> or <em>"Why did I save this?"</em> You're not alone. Traditional file systems are great for storage but terrible for context.
-      </p>
-      
-      <div class="highlight-box">
-        <p>SmartShot solves the fundamental problem: <strong>"I know I saved this image for a reason, but what was it?"</strong> — providing instant answers through intelligent metadata tracking.</p>
-      </div>
-      
-      <p>Perfect for diverse use cases:</p>
-      
-      <ul>
-        <li><span class="feature-highlight">🧑‍💻 Developers capturing UI screenshots and design references
-          <div class="feature-card">
-            <h3>Developer Workflow</h3>
-            <p>Track UI inspirations, bug screenshots, and design references with full context of where they came from and what project they relate to.</p>
-          </div>
-        </span></li>
-        <li><span class="feature-highlight">👩‍🏫 Educators collecting visual materials for lessons
-          <div class="feature-card">
-            <h3>Educational Resources</h3>
-            <p>Build comprehensive libraries of educational images with source attribution and context for proper citation and reuse.</p>
-          </div>
-        </span></li>
-        <li><span class="feature-highlight">👨‍🔬 Researchers gathering image-based data and references
-          <div class="feature-card">
-            <h3>Research Documentation</h3>
-            <p>Maintain accurate records of visual references with complete source information for academic integrity and future reference.</p>
-          </div>
-        </span></li>
-        <li><span class="feature-highlight">🎨 Designers collecting inspiration and mood boards
-          <div class="feature-card">
-            <h3>Creative Workflow</h3>
-            <p>Build extensive inspiration libraries with source attribution, making it easy to revisit and credit original creators.</p>
-          </div>
-        </span><span class="new-feature">NEW</span></li>
-        <li><span class="feature-highlight">📱 Social media managers curating content
-          <div class="feature-card">
-            <h3>Content Curation</h3>
-            <p>Track viral images, memes, and trending visuals with complete source information for proper attribution and engagement analysis.</p>
-          </div>
-        </span><span class="new-feature">NEW</span></li>
-        <li><span class="feature-highlight">😎 Anyone who wants organized, contextual downloads
-          <div class="feature-card">
-            <h3>Personal Organization</h3>
-            <p>Whether saving memes, recipes, travel inspiration, or important documents, never lose context again.</p>
-          </div>
-        </span></li>
-      </ul>
-    </section>
+        <div class="highlight-box">
+          <p><strong>popup.js</strong> – The brains behind <code>popup.html</code>. Handles user interactions like toggling screenshot view, searching, or applying filters — all from the popup.</p>
+        </div>
 
-    <section>
-  <h2>📂 SmartShot File Architecture</h2>
-  <p>SmartShot is more than just a pretty UI — it’s a finely-tuned machine made of multiple working parts. Here's how it’s structured under the hood:</p>
+        <div class="highlight-box">
+          <p><strong>background.js</strong> – The always-on observer. Listens for download and screenshot events in real time, captures metadata, and writes them into storage like a silent ninja.</p>
+        </div>
 
-  <div class="highlight-box">
-    <p><strong>manifest.json</strong> – The blueprint of the extension. It defines permissions, background scripts, icons, action popups, and everything Chrome needs to understand SmartShot.</p>
+        <div class="highlight-box">
+          <p><strong>history.json</strong> – The structured vault. Stores all screenshot and download metadata in a machine-readable format. Even if you uninstall and reinstall — your story stays intact.</p>
+        </div>
+
+        <div class="highlight-box">
+          <p><strong>history.html</strong> – Your visual time machine. It reads from <code>history.json</code> and presents a beautiful, searchable, human-friendly timeline of everything you've saved.</p>
+        </div>
+
+        <p>This modular architecture gives SmartShot superpowers: it separates logic, UI, and storage into neat components, making it easy to maintain, expand, and debug. It's like Lego — clean, reusable, and fun to build with.</p>
+      </section>
+
+      <section>
+        <h2>🚀 Get SmartShot Today</h2>
+        <p>Stop losing track of your downloads and start building an organized, searchable library of images with complete context.</p>
+        
+        <center>
+          <button class="download-btn" onclick="showComingSoon()">Add to Chrome - It's Free!</button>
+        </center>
+        
+        <p>SmartShot is currently in development. Join our waitlist to be notified when we launch!</p>
+        
+        <div class="developer-credit">
+          Developed in the World of <a href="https://github.com/fdev-looper" target="_blank">DNATech</a>
+        </div>
+      </section>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    
+    <div class="coming-soon-popup" id="comingSoonPopup">
+      <span class="smiley">😊</span>
+      <h3>Coming Soon!</h3>
+      <p>SmartShot is currently in active development. We're working hard to bring you the best image tracking experience.</p>
+      <p>Join our waitlist to be the first to know when we launch!</p>
+      <button class="close-btn" onclick="hideComingSoon()">Got It!</button>
+    </div>
+
+    <footer>
+      <p>© 2025 SmartShot Chrome Extension. All rights reserved.</p>
+      <p> SmartShot by  <a href="https://github.com/fdev-looper" target="_blank">fdev-looper</a></p>
+    </footer>
   </div>
-
-  <div class="highlight-box">
-    <p><strong>popup.html</strong> – The extension’s control center. It provides a lightweight interface users interact with when clicking the Chrome extension icon.</p>
-  </div>
-
-  <div class="highlight-box">
-    <p><strong>popup.js</strong> – The brains behind <code>popup.html</code>. Handles user interactions like toggling screenshot view, searching, or applying filters — all from the popup.</p>
-  </div>
-
-  <div class="highlight-box">
-    <p><strong>background.js</strong> – The always-on observer. Listens for download and screenshot events in real time, captures metadata, and writes them into storage like a silent ninja.</p>
-  </div>
-
-  <div class="highlight-box">
-    <p><strong>history.json</strong> – The structured vault. Stores all screenshot and download metadata in a machine-readable format. Even if you uninstall and reinstall — your story stays intact.</p>
-  </div>
-
-  <div class="highlight-box">
-    <p><strong>history.html</strong> – Your visual time machine. It reads from <code>history.json</code> and presents a beautiful, searchable, human-friendly timeline of everything you’ve saved.</p>
-  </div>
-
-  <p>This modular architecture gives SmartShot superpowers: it separates logic, UI, and storage into neat components, making it easy to maintain, expand, and debug. It's like Lego — clean, reusable, and fun to build with.</p>
-</section>
-
-
-    <section>
-      <h2>🚀 Get SmartShot Today</h2>
-      <p>Stop losing track of your downloads and start building an organized, searchable library of images with complete context.</p>
-      
-      <center>
-        <button class="download-btn" onclick="showComingSoon()">Add to Chrome - It's Free!</button>
-      </center>
-      
-      <p>SmartShot is currently in development. Join our waitlist to be notified when we launch!</p>
-      
-      <div class="developer-credit">
-        Developed in the World of <a href="https://github.com/fdev-looper" target="_blank">DNATech</a>
-      </div>
-    </section>
-  </div>
-
-  <div class="overlay" id="overlay"></div>
-  
-  <div class="coming-soon-popup" id="comingSoonPopup">
-    <span class="smiley">😊</span>
-    <h3>Coming Soon!</h3>
-    <p>SmartShot is currently in active development. We're working hard to bring you the best image tracking experience.</p>
-    <p>Join our waitlist to be the first to know when we launch!</p>
-    <button class="close-btn" onclick="hideComingSoon()">Got It!</button>
-  </div>
-
-  <footer>
-    <p>© 2025 SmartShot Chrome Extension. All rights reserved.</p>
-    <p> SmartShort by  <a href="https://github.com/fdev-looper" target="_blank">fdev-looper</a></p>
-  </footer>
 
   <script>
-    // Floating emoji follower
-    document.addEventListener('mousemove', function(e) {
-      const follower = document.querySelector('.emoji-follower');
-      follower.style.left = e.pageX + 'px';
-      follower.style.top = e.pageY + 'px';
+    // Camera Intro Animation
+    function startCameraIntro() {
+      const flash = document.getElementById('cameraFlash');
+      const intro = document.getElementById('cameraIntro');
+      const mainContent = document.getElementById('mainContent');
       
-      // Random emoji based on position
-      const emojis = ['🖼️', '📷', '🔍', '📥', '🧠', '✨', '🌟', '💡'];
-      const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-      follower.textContent = randomEmoji;
-      follower.classList.add('active');
-      
+      // Simulate camera shutter sound (visual feedback only since we can't use audio files)
       setTimeout(() => {
-        follower.classList.remove('active');
-      }, 3000);
-    });
+        flash.classList.add('flash');
+      }, 800);
+      
+      // Hide intro and show main content
+      setTimeout(() => {
+        intro.classList.add('hidden');
+        mainContent.classList.add('show');
+        
+        // Start other animations
+        startFloatingEmojis();
+        startScrollAnimations();
+      }, 3500);
+    }
+
+    // Start camera intro when page loads
+    window.addEventListener('load', startCameraIntro);
+
+    // Floating emoji follower
+    function startFloatingEmojis() {
+      document.addEventListener('mousemove', function(e) {
+        const follower = document.querySelector('.emoji-follower');
+        follower.style.left = e.pageX + 'px';
+        follower.style.top = e.pageY + 'px';
+        
+        // Random emoji based on position
+        const emojis = ['🖼️', '📷', '🔍', '📥', '🧠', '✨', '🌟', '💡'];
+        const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+        follower.textContent = randomEmoji;
+        follower.classList.add('active');
+        
+        setTimeout(() => {
+          follower.classList.remove('active');
+        }, 3000);
+      });
+    }
+
+    // Intersection Observer for scroll animations
+    function startScrollAnimations() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('section').forEach(section => {
+        observer.observe(section);
+      });
+    }
 
     // Show coming soon popup
     function showComingSoon() {
@@ -1034,17 +1320,74 @@
       document.getElementById('comingSoonPopup').classList.remove('active');
     }
 
-    // Intersection Observer for scroll animations
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
+    // Close popup when clicking overlay
+    document.getElementById('overlay').addEventListener('click', hideComingSoon);
+
+    // Prevent body scroll when intro is active
+    document.body.style.overflow = 'hidden';
+    
+    setTimeout(() => {
+      document.body.style.overflow = 'auto';
+    }, 3500);
+
+    // Add some interactive elements for better UX
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add click sound effect simulation
+      const buttons = document.querySelectorAll('button, .download-btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          this.style.transform = 'scale(0.95)';
+          setTimeout(() => {
+            this.style.transform = '';
+          }, 100);
+        });
+      });
+
+      // Add hover effects to cards
+      const cards = document.querySelectorAll('.feature-card-static, .comparison-card');
+      cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-5px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+          this.style.transform = '';
+        });
+      });
+    });
+
+    // Add smooth scrolling for better UX
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
         }
       });
-    }, { threshold: 0.1 });
+    });
 
-    document.querySelectorAll('section').forEach(section => {
-      observer.observe(section);
+    // Add loading state for download button
+    function showDownloadLoading() {
+      const btn = document.querySelector('.download-btn');
+      const originalText = btn.textContent;
+      btn.textContent = 'Loading...';
+      btn.style.opacity = '0.7';
+      
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.opacity = '1';
+        showComingSoon();
+      }, 1000);
+    }
+
+    // Update download button to show loading
+    document.querySelector('.download-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      showDownloadLoading();
     });
   </script>
 </body>
