@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         screenshots: [],
         downloads: []
     };
+    let stickyNotes = {}; // Store sticky notes by item ID
 
     const list = document.getElementById("list");
     const searchBar = document.getElementById("searchBar");
@@ -16,6 +17,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     initializeEventListeners();
     await loadData();
+    await loadStickyNotes();
 
     function initializeEventListeners() {
         document.querySelectorAll('.toggle-option').forEach(option => {
@@ -109,6 +111,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                 return !isScreenshot && (item.downloadUrl || item.filename);
             });
 
+            // Add unique IDs to items for sticky notes
+            allData.screenshots.forEach((item, index) => {
+                if (!item.id) {
+                    item.id = `screenshot_${generateItemId(item, index)}`;
+                }
+            });
+
+            allData.downloads.forEach((item, index) => {
+                if (!item.id) {
+                    item.id = `download_${generateItemId(item, index)}`;
+                }
+            });
+
             allData.screenshots.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
             allData.downloads.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
 
@@ -116,6 +131,142 @@ document.addEventListener("DOMContentLoaded", async () => {
             updateStats();
         } catch (error) {
             displayError(`Failed to load history. Error: ${error.message}`);
+        }
+    }
+
+    function generateItemId(item, index) {
+        // Generate a unique ID based on item properties
+        let fname = '';
+        if (item.filepath) {
+            fname = item.filepath.split(/[\\/]/).pop();
+        } else if (item.filename) {
+            fname = item.filename.split(/[\\/]/).pop();
+        } else {
+            fname = item.filename || '';
+        }
+        
+        const timestamp = item.timestamp || item.dateCreated || item.downloadTime || Date.now();
+        const size = item.size || item.fileSize || item.totalBytes || 0;
+        
+        return `${fname.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}_${size}_${index}`.substring(0, 50);
+    }
+
+    async function loadStickyNotes() {
+        try {
+            const data = await new Promise(resolve => {
+                chrome.storage.local.get({ stickyNotes: {} }, resolve);
+            });
+            stickyNotes = data.stickyNotes || {};
+        } catch (error) {
+            console.error('Failed to load sticky notes:', error);
+            stickyNotes = {};
+        }
+    }
+
+    async function saveStickyNotes() {
+        try {
+            await new Promise(resolve => {
+                chrome.storage.local.set({ stickyNotes }, resolve);
+            });
+        } catch (error) {
+            console.error('Failed to save sticky notes:', error);
+        }
+    }
+
+    function initializeStickyNoteListeners() {
+        // Add event listeners for sticky note previews (click to edit)
+        document.querySelectorAll('.sticky-note-preview').forEach(preview => {
+            preview.addEventListener('click', function() {
+                const itemId = this.dataset.itemId;
+                showStickyNoteEditor(itemId);
+            });
+        });
+
+        // Add event listeners for save/cancel buttons
+        document.querySelectorAll('.sticky-note-save').forEach(button => {
+            button.addEventListener('click', function() {
+                const itemId = this.dataset.itemId;
+                saveStickyNote(itemId);
+            });
+        });
+
+        document.querySelectorAll('.sticky-note-cancel').forEach(button => {
+            button.addEventListener('click', function() {
+                const itemId = this.dataset.itemId;
+                hideStickyNoteEditor(itemId);
+            });
+        });
+
+        // Handle Enter key in textarea (Ctrl+Enter to save)
+        document.querySelectorAll('.sticky-note-textarea').forEach(textarea => {
+            textarea.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    e.preventDefault();
+                    const itemId = this.dataset.itemId;
+                    saveStickyNote(itemId);
+                }
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    const itemId = this.dataset.itemId;
+                    hideStickyNoteEditor(itemId);
+                }
+            });
+        });
+    }
+
+    function showStickyNoteEditor(itemId) {
+        const preview = document.querySelector(`.sticky-note-preview[data-item-id="${itemId}"]`);
+        const editor = document.querySelector(`.sticky-note-editor[data-item-id="${itemId}"]`);
+        const textarea = document.querySelector(`.sticky-note-textarea[data-item-id="${itemId}"]`);
+        
+        if (preview && editor && textarea) {
+            preview.style.display = 'none';
+            editor.classList.add('active');
+            textarea.value = stickyNotes[itemId] || '';
+            textarea.focus();
+        }
+    }
+
+    function hideStickyNoteEditor(itemId) {
+        const preview = document.querySelector(`.sticky-note-preview[data-item-id="${itemId}"]`);
+        const editor = document.querySelector(`.sticky-note-editor[data-item-id="${itemId}"]`);
+        
+        if (preview && editor) {
+            preview.style.display = 'flex';
+            editor.classList.remove('active');
+            updateStickyNotePreview(itemId);
+        }
+    }
+
+    function saveStickyNote(itemId) {
+        const textarea = document.querySelector(`.sticky-note-textarea[data-item-id="${itemId}"]`);
+        
+        if (textarea) {
+            const noteText = textarea.value.trim();
+            if (noteText) {
+                stickyNotes[itemId] = noteText;
+            } else {
+                delete stickyNotes[itemId];
+            }
+            
+            saveStickyNotes();
+            hideStickyNoteEditor(itemId);
+        }
+    }
+
+    function updateStickyNotePreview(itemId) {
+        const preview = document.querySelector(`.sticky-note-preview[data-item-id="${itemId}"]`);
+        const previewText = document.querySelector(`.sticky-note-preview-text[data-item-id="${itemId}"]`);
+        
+        if (preview && previewText) {
+            const noteText = stickyNotes[itemId];
+            if (noteText) {
+                previewText.textContent = noteText;
+                preview.classList.remove('empty');
+            } else {
+                previewText.textContent = 'Click to add a note...';
+                preview.classList.add('empty');
+            }
         }
     }
 
@@ -204,6 +355,31 @@ document.addEventListener("DOMContentLoaded", async () => {
                 dateTimeLabel = `<span class="date-label">Downloaded at:</span> <span class="date">${dateStr}</span> <span class="time">${timeStr}</span>`;
             }
 
+            // Sticky note content
+            const itemId = item.id;
+            const noteText = stickyNotes[itemId] || '';
+            const stickyNoteHtml = `
+                <div class="sticky-note-container">
+                    <div class="sticky-note-preview${!noteText ? ' empty' : ''}" data-item-id="${itemId}">
+                        <span class="sticky-note-preview-text" data-item-id="${itemId}">
+                            ${noteText || 'Click to add a note...'}
+                        </span>
+                        <span class="sticky-note-edit-icon">✏️</span>
+                    </div>
+                    <div class="sticky-note-editor" data-item-id="${itemId}">
+                        <textarea 
+                            class="sticky-note-textarea" 
+                            data-item-id="${itemId}" 
+                            placeholder="Add your notes here... (Ctrl+Enter to save, Esc to cancel)"
+                        ></textarea>
+                        <div class="sticky-note-actions">
+                            <button class="sticky-note-save" data-item-id="${itemId}">Save</button>
+                            <button class="sticky-note-cancel" data-item-id="${itemId}">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
             return `
                 <div class="item">
                     <div class="item-header">
@@ -247,10 +423,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 </div>
                             ` : ''}
                         </div>
+                        ${stickyNoteHtml}
                     </div>
                 </div>
             `;
         }).join('');
+
+        // Initialize sticky note event listeners after rendering
+        setTimeout(() => initializeStickyNoteListeners(), 100);
     }
 
     function generateUrlSection(item) {
@@ -355,6 +535,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 displayFilename = displayFilename.replace(/(_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)?(\.png)?$/i, '').replace(/^screenshot_/, '');
             }
 
+            // Also search in sticky notes
+            const noteText = stickyNotes[item.id] || '';
+
             if (filterByValue === 'all') {
                 return (displayFilename || '').toLowerCase().includes(query) ||
                     (item.name || '').toLowerCase().includes(query) ||
@@ -365,6 +548,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     (item.downloadUrl || '').toLowerCase().includes(query) ||
                     (item.referrer || '').toLowerCase().includes(query) ||
                     (item.filepath || '').toLowerCase().includes(query) ||
+                    noteText.toLowerCase().includes(query) ||
                     formatDate(item.timestamp || item.dateCreated || item.downloadTime).toLowerCase().includes(query) ||
                     formatTime(item.timestamp || item.dateCreated || item.downloadTime).toLowerCase().includes(query);
             } else if (filterByValue === 'filename') {
@@ -500,6 +684,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
     }
 
+    // Storage change listeners
     if (chrome && chrome.storage && chrome.storage.onChanged) {
         chrome.storage.onChanged.addListener((changes, areaName) => {
             if (areaName === 'local' && (
@@ -512,6 +697,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 changes.downloadHistory
             )) {
                 loadData();
+            }
+            if (areaName === 'local' && changes.stickyNotes) {
+                loadStickyNotes();
             }
         });
     }
