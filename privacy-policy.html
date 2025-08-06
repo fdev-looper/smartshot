@@ -4,93 +4,260 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SmartShot Privacy Policy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary: #6366F1;
+      --primary-dark: #4F46E5;
+      --dark: #1E293B;
+      --light: #F8FAFC;
+      --gray: #94A3B8;
+      --success: #10B981;
+    }
+    
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f9f9f9;
-      color: #333;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #F9FAFB 0%, #F1F5F9 100%);
+      color: var(--dark);
       margin: 0;
       padding: 0;
       line-height: 1.6;
+      min-height: 100vh;
     }
 
     header {
-      background-color: #3f51b5;
-      color: white;
-      padding: 1.5rem 1rem;
+      background: white;
+      padding: 2rem 1rem;
       text-align: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .lock-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--primary);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+    }
+
+    .lock-icon svg {
+      width: 24px;
+      height: 24px;
+      color: white;
+    }
+
+    .privacy-badge {
+      background: var(--success);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 100px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .privacy-badge svg {
+      width: 16px;
+      height: 16px;
     }
 
     main {
       max-width: 800px;
       margin: 2rem auto;
       background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+      padding: 3rem;
+      border-radius: 16px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.03);
+      border: 1px solid rgba(0,0,0,0.05);
     }
 
     h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #3f51b5;
+      font-size: 2.25rem;
+      margin-bottom: 0.5rem;
+      color: var(--dark);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--gray);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto 2rem;
     }
 
     h2 {
-      margin-top: 2rem;
-      font-size: 1.2rem;
-      color: #444;
+      margin-top: 3rem;
+      font-size: 1.25rem;
+      color: var(--dark);
+      font-weight: 600;
+      position: relative;
+      padding-left: 1.5rem;
+    }
+
+    h2:before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.4em;
+      height: 0.8em;
+      width: 4px;
+      background: var(--primary);
+      border-radius: 4px;
     }
 
     p {
       margin: 1rem 0;
+      color: var(--dark);
+    }
+
+    .highlight-box {
+      background: #F1F5F9;
+      border-left: 4px solid var(--primary);
+      padding: 1.5rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1.5rem 0;
+    }
+
+    .highlight-box strong {
+      color: var(--primary-dark);
     }
 
     footer {
       text-align: center;
-      margin: 2rem 0;
+      margin: 3rem 0;
       font-size: 0.9rem;
-      color: #999;
+      color: var(--gray);
     }
 
-    @media (max-width: 600px) {
+    .contact-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--primary);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 500;
+      margin-top: 1rem;
+      transition: all 0.2s;
+    }
+
+    .contact-button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .contact-button svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    @media (max-width: 768px) {
       main {
         margin: 1rem;
+        padding: 2rem;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      main {
         padding: 1.5rem;
+      }
+      
+      .highlight-box {
+        padding: 1rem;
       }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>SmartShot Privacy Policy</h1>
+    <div class="logo-container">
+      <div class="lock-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      </div>
+    </div>
+    <h1>Your Privacy is Locked to Your Computer</h1>
+    <div class="privacy-badge">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      100% Local Processing
+    </div>
   </header>
 
   <main>
+    <p class="subtitle">SmartShot is designed with privacy at its core. Nothing leaves your computer - ever.</p>
+
+    <div class="highlight-box">
+      <p><strong>Zero Data Collection:</strong> Unlike many screenshot tools, SmartShot doesn't collect, store, or transmit any of your data to external servers. Your screenshots and activity remain exclusively on your device.</p>
+    </div>
+
     <p><strong>Last Updated:</strong> August 6, 2025</p>
 
     <h2>1. What Data Do We Collect?</h2>
-    <p><strong>Nothing.</strong> SmartShot does not collect or transmit any personal data. Your screenshots, download metadata, and settings are stored locally on your device only.</p>
+    <p><strong>Absolutely nothing.</strong> SmartShot operates entirely locally on your device. We don't collect screenshots, metadata, usage statistics, or any other information.</p>
 
     <h2>2. How Is Data Stored?</h2>
-    <p>All data is stored securely in Chrome's local storage using the <code>chrome.storage.local</code> API. SmartShot does not transmit data to any server or third-party service.</p>
+    <p>All data is stored securely in Chrome's local storage using the <code>chrome.storage.local</code> API. This means:</p>
+    <ul>
+      <li>Data never leaves your browser</li>
+      <li>It's encrypted by Chrome's security model</li>
+      <li>Only accessible by you</li>
+    </ul>
 
-    <h2>3. What Permissions Are Used?</h2>
-    <p>SmartShot uses Chrome permissions such as <code>downloads</code>, <code>tabs</code>, and <code>storage</code> to function properly. These are only used for local functionality.</p>
+    <h2>3. Permission Usage</h2>
+    <p>SmartShot requires standard Chrome permissions (<code>downloads</code>, <code>tabs</code>, <code>storage</code>) solely to provide core functionality. These permissions:</p>
+    <ul>
+      <li>Are common for browser extensions</li>
+      <li>Only enable local operations</li>
+      <li>Don't grant any remote access</li>
+    </ul>
 
-    <h2>4. Will You Sell or Share My Data?</h2>
-    <p>Nope. We don’t even have access to it. Everything stays on your device. Nothing is sent over the internet.</p>
+    <h2>4. Data Sharing & Selling</h2>
+    <p>We have nothing to share because we don't collect anything in the first place. Our business model doesn't rely on data collection or advertising.</p>
 
-    <h2>5. What Happens on Uninstall?</h2>
-    <p>When you uninstall the extension, all local data stored by SmartShot is automatically deleted by your browser.</p>
+    <h2>5. Uninstalling SmartShot</h2>
+    <p>When you remove SmartShot, Chrome automatically deletes all associated local data - it's like the extension was never there.</p>
 
-    <h2>6. Contact</h2>
-    <p>If you have any questions about this privacy policy or the extension, reach out at <strong>appsbyanuj@gmail.com</strong>.</p>
+    <h2>6. Have Questions?</h2>
+    <p>We're transparent about our privacy approach. If you have any concerns, we're happy to explain further.</p>
+    <a href="mailto:appsbyanuj@gmail.com" class="contact-button">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+      Contact Us
+    </a>
   </main>
 
   <footer>
-    © 2025 SmartShot by DNATech. All rights reserved.
+    © 2025 SmartShot by DNATech. All rights reserved.<br>
+    Privacy isn't just a policy - it's our design principle.
   </footer>
 </body>
 </html>
