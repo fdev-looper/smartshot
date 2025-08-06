@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         screenshots: [],
         downloads: []
     };
-    let stickyNotes = {}; // Store sticky notes by item ID
+    let stickyNotes = {};
 
     const list = document.getElementById("list");
     const searchBar = document.getElementById("searchBar");
@@ -47,42 +47,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         updateStats();
     }
 
-    // Enhanced data validation functions
     function isValidDownloadUrl(url) {
         if (!url) return false;
-        
-        // Reject blob URLs as they're temporary and unreachable
         if (url.startsWith('blob:')) return false;
-        
-        // Reject data URLs for downloads (they're usually screenshots)
         if (url.startsWith('data:')) return false;
-        
-        // Only allow http/https URLs
         return url.startsWith('http://') || url.startsWith('https://');
     }
 
     function isRecentDownload(timestamp, maxDaysOld = 30) {
         if (!timestamp) return false;
-        
         const now = new Date();
         const downloadDate = new Date(timestamp);
-        
-        // Check if timestamp is valid
         if (isNaN(downloadDate.getTime())) return false;
-        
-        // Check if download is not in the future (invalid timestamp)
         if (downloadDate > now) return false;
-        
-        // Check if download is within acceptable range (not too old)
         const daysDiff = (now - downloadDate) / (1000 * 60 * 60 * 24);
         return daysDiff <= maxDaysOld;
     }
 
     function hasValidFileInfo(item) {
-        // Must have a filename and size
         const hasFilename = item.filename || item.filepath || item.name;
         const hasSize = item.size || item.fileSize || item.totalBytes;
-        
         return hasFilename && hasSize;
     }
 
@@ -90,7 +74,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
             showLoading();
             
-            // Get data from multiple potential storage locations
             const data = await new Promise(resolve => {
                 chrome.storage.local.get({
                     downloadHistory: [],
@@ -102,16 +85,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             let allItems = [];
             
-            // Combine all download sources
             if (data.downloadHistory) allItems = allItems.concat(data.downloadHistory);
             if (data.downloads) allItems = allItems.concat(data.downloads);
             if (data.fileDownloads) allItems = allItems.concat(data.fileDownloads);
             if (data.smartshotHistory) allItems = allItems.concat(data.smartshotHistory);
 
-            // Remove duplicates first
             allItems = removeDuplicates(allItems);
 
-            // Filter screenshots with enhanced validation
             allData.screenshots = allItems.filter(item => {
                 if (!hasValidFileInfo(item)) return false;
                 
@@ -140,9 +120,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 return isScreenshot && (item.size || item.fileSize || item.totalBytes);
             });
 
-            // Filter downloads with strict validation
             allData.downloads = allItems.filter(item => {
-                // Must have valid file info
                 if (!hasValidFileInfo(item)) return false;
                 
                 let fname = '';
@@ -155,7 +133,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
                 fname = fname.toLowerCase();
 
-                // Exclude screenshots
                 const isScreenshot = (
                     fname.includes('screenshot') ||
                     fname.includes('capture') ||
@@ -170,11 +147,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 if (isScreenshot) return false;
 
-                // Must have either a valid download URL or be a recent download
                 const hasValidUrl = isValidDownloadUrl(item.downloadUrl) || isValidDownloadUrl(item.url);
                 const isRecent = isRecentDownload(item.timestamp || item.dateCreated || item.downloadTime);
                 
-                // For downloads without valid URLs, only include if they're very recent (last 7 days)
                 if (!hasValidUrl) {
                     return isRecentDownload(item.timestamp || item.dateCreated || item.downloadTime, 7);
                 }
@@ -182,25 +157,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                 return true;
             });
 
-            // Additional filtering to remove suspicious entries
             allData.downloads = allData.downloads.filter(item => {
                 const timestamp = item.timestamp || item.dateCreated || item.downloadTime;
                 
-                // Remove items with timestamps that don't make sense
                 if (timestamp) {
                     const downloadDate = new Date(timestamp);
                     const now = new Date();
-                    
-                    // Remove future dates
                     if (downloadDate > now) return false;
-                    
-                    // Remove very old dates that are likely corrupted (older than 1 year)
                     const yearAgo = new Date();
                     yearAgo.setFullYear(yearAgo.getFullYear() - 1);
                     if (downloadDate < yearAgo) return false;
                 }
 
-                // Remove items with suspicious filenames that have old dates but recent timestamps
                 let fname = '';
                 if (item.filepath) {
                     fname = item.filepath.split(/[\\/]/).pop();
@@ -210,15 +178,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                     fname = item.filename || '';
                 }
 
-                // Check for date mismatch in filename vs timestamp
-                const filenameMatch = fname.match(/20\d{2}/); // Match years like 2024, 2023, etc.
+                const filenameMatch = fname.match(/20\d{2}/);
                 if (filenameMatch && timestamp) {
                     const filenameYear = parseInt(filenameMatch[0]);
                     const timestampYear = new Date(timestamp).getFullYear();
-                    
-                    // If filename has old year but timestamp is recent, it might be corrupted data
                     if (Math.abs(filenameYear - timestampYear) > 1) {
-                        console.warn('Suspicious date mismatch, excluding:', fname, filenameYear, timestampYear);
                         return false;
                     }
                 }
@@ -226,7 +190,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 return true;
             });
 
-            // Add unique IDs to items for sticky notes
             allData.screenshots.forEach((item, index) => {
                 if (!item.id) {
                     item.id = `screenshot_${generateItemId(item, index)}`;
@@ -239,7 +202,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
             });
 
-            // Sort by timestamp (most recent first)
             allData.screenshots.sort((a, b) => {
                 const timeA = new Date(a.timestamp || a.dateCreated || a.downloadTime || 0);
                 const timeB = new Date(b.timestamp || b.dateCreated || b.downloadTime || 0);
@@ -255,7 +217,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             displayData(allData[currentType]);
             updateStats();
             
-            console.log(`Loaded ${allData.screenshots.length} screenshots and ${allData.downloads.length} downloads`);
         } catch (error) {
             console.error('Error loading data:', error);
             displayError(`Failed to load history. Error: ${error.message}`);
@@ -263,7 +224,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function generateItemId(item, index) {
-        // Generate a unique ID based on item properties
         let fname = '';
         if (item.filepath) {
             fname = item.filepath.split(/[\\/]/).pop();
@@ -302,7 +262,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function initializeStickyNoteListeners() {
-        // Add event listeners for sticky note previews (click to edit)
         document.querySelectorAll('.sticky-note-preview').forEach(preview => {
             preview.addEventListener('click', function() {
                 const itemId = this.dataset.itemId;
@@ -310,7 +269,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         });
 
-        // Add event listeners for save/cancel buttons
         document.querySelectorAll('.sticky-note-save').forEach(button => {
             button.addEventListener('click', function() {
                 const itemId = this.dataset.itemId;
@@ -325,7 +283,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         });
 
-        // Handle Enter key in textarea (Ctrl+Enter to save)
         document.querySelectorAll('.sticky-note-textarea').forEach(textarea => {
             textarea.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' && e.ctrlKey) {
@@ -413,7 +370,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (fname.toLowerCase().includes('screenshot')) {
                 key = `ss-${fname.replace(/\.[^/.]+$/, "")}-${item.timestamp || ''}`;
             } else {
-                // Enhanced duplicate detection for downloads
                 const size = item.size || item.fileSize || item.totalBytes || 0;
                 const timestamp = item.timestamp || item.dateCreated || item.downloadTime || '';
                 const url = item.downloadUrl || item.url || '';
@@ -447,7 +403,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         list.innerHTML = data.map(item => {
-            // Clean filename: Remove screenshot_ prefix and date/time part
             let displayFilename = '';
             if (item.filepath) {
                 displayFilename = item.filepath.split(/[\\/]/).pop();
@@ -457,11 +412,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 displayFilename = item.filename || item.name || "Untitled";
             }
 
-            // Remove SmartShot date/time pattern from screenshot name
             if (currentType === 'screenshots') {
                 displayFilename = displayFilename
                     .replace(/^screenshot_/, '')
-                    .replace(/_{2,}/g, '_') // Remove double underscores
+                    .replace(/_{2,}/g, '_')
                     .replace(/(_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)?(\.png)?$/i, '.png');
             }
 
@@ -474,12 +428,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             const fileType = getFileType(fileExtension);
             const dimensions = item.dimensions || item.resolution || null;
 
-            // Date & Time for UI
             const timestamp = item.timestamp || item.dateCreated || item.downloadTime;
             const dateStr = formatDate(timestamp);
             const timeStr = formatTime(timestamp);
 
-            // --- UI change: Show "Captured at:" for screenshots, "Downloaded at:" for downloads ---
             let dateTimeLabel = '';
             if (currentType === 'screenshots') {
                 dateTimeLabel = `<span class="date-label">Captured at:</span> <span class="date">${dateStr}</span> <span class="time">${timeStr}</span>`;
@@ -487,7 +439,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 dateTimeLabel = `<span class="date-label">Downloaded at:</span> <span class="date">${dateStr}</span> <span class="time">${timeStr}</span>`;
             }
 
-            // Sticky note content
             const itemId = item.id;
             const noteText = stickyNotes[itemId] || '';
             const stickyNoteHtml = `
@@ -561,13 +512,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             `;
         }).join('');
 
-        // Initialize sticky note event listeners after rendering
         setTimeout(() => initializeStickyNoteListeners(), 100);
     }
 
     function generateUrlSection(item) {
         let urlSection = '';
-        // Screenshots logic
         if (currentType === 'screenshots') {
             if (item.url && item.url.startsWith('data:')) {
                 const dataType = item.url.substring(5, item.url.indexOf(';')) || 'image';
@@ -601,7 +550,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 `;
             }
         }
-        // Downloads logic: Only show valid URLs
         if (currentType === 'downloads') {
             if (item.downloadUrl && isValidDownloadUrl(item.downloadUrl)) {
                 urlSection += `
@@ -610,7 +558,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     </div>
                 `;
             } else if (!isValidDownloadUrl(item.downloadUrl) && item.downloadUrl) {
-                // Show that URL is not accessible
                 urlSection += `
                     <div class="item-url">
                         <strong>Download URL:</strong> <span style="color: #9ca3af;">[URL no longer accessible]</span>
@@ -673,12 +620,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 displayFilename = item.filename || item.name || "Untitled";
             }
 
-            // Screenshot name clean for search
             if (currentType === 'screenshots') {
                 displayFilename = displayFilename.replace(/(_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)?(\.png)?$/i, '').replace(/^screenshot_/, '');
             }
 
-            // Also search in sticky notes
             const noteText = stickyNotes[item.id] || '';
 
             if (filterByValue === 'all') {
@@ -827,7 +772,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
     }
 
-    // Add cleanup function for old/invalid data
     async function cleanupStorageData() {
         try {
             const data = await new Promise(resolve => {
@@ -837,25 +781,18 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
 
             let cleanedHistory = data.downloadHistory.filter(item => {
-                // Remove items with invalid timestamps
                 const timestamp = item.timestamp || item.dateCreated || item.downloadTime;
                 if (timestamp) {
                     const date = new Date(timestamp);
                     const now = new Date();
-                    
-                    // Removing future dates or very old dates (older than 2 years)
                     if (date > now || date < new Date(now.getTime() - 2 * 365 * 24 * 60 * 60 * 1000)) {
-                        console.log('Removing invalid timestamp item:', item.filename, timestamp);
                         return false;
                     }
                 }
-
-                // Keep valid items
                 return hasValidFileInfo(item);
             });
 
             if (cleanedHistory.length !== data.downloadHistory.length) {
-                console.log(`Cleaned ${data.downloadHistory.length - cleanedHistory.length} invalid items from storage`);
                 await new Promise(resolve => {
                     chrome.storage.local.set({ downloadHistory: cleanedHistory }, resolve);
                 });
@@ -865,10 +802,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    //  cleanup on initialization 
     cleanupStorageData();
 
-    // Storage change listeners
     if (chrome && chrome.storage && chrome.storage.onChanged) {
         chrome.storage.onChanged.addListener((changes, areaName) => {
             if (areaName === 'local' && (
