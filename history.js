@@ -843,7 +843,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const date = new Date(timestamp);
                     const now = new Date();
                     
-                    // Remove future dates or very old dates (older than 2 years)
+                    // Removing future dates or very old dates (older than 2 years)
                     if (date > now || date < new Date(now.getTime() - 2 * 365 * 24 * 60 * 60 * 1000)) {
                         console.log('Removing invalid timestamp item:', item.filename, timestamp);
                         return false;
@@ -865,7 +865,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // Run cleanup on initialization (but don't wait for it)
+    //  cleanup on initialization 
     cleanupStorageData();
 
     // Storage change listeners
