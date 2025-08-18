@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         downloads: []
     };
     let stickyNotes = {};
+    let extensionInstallDate = null;
 
     const list = document.getElementById("list");
     const searchBar = document.getElementById("searchBar");
@@ -16,6 +17,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const weekCount = document.getElementById("weekCount");
 
     initializeEventListeners();
+    await loadExtensionInstallDate();
     await loadData();
     await loadStickyNotes();
 
@@ -36,6 +38,28 @@ document.addEventListener("DOMContentLoaded", async () => {
         filterBy.addEventListener('change', performSearch);
     }
 
+    // NEW: Extension install date tracking
+    async function loadExtensionInstallDate() {
+        try {
+            const data = await new Promise(resolve => {
+                chrome.storage.local.get({ extensionInstallDate: null }, resolve);
+            });
+            
+            if (!data.extensionInstallDate) {
+                // Set install date to now if not set
+                extensionInstallDate = Date.now();
+                await new Promise(resolve => {
+                    chrome.storage.local.set({ extensionInstallDate: extensionInstallDate }, resolve);
+                });
+            } else {
+                extensionInstallDate = data.extensionInstallDate;
+            }
+        } catch (error) {
+            console.error('Error loading install date:', error);
+            extensionInstallDate = Date.now();
+        }
+    }
+
     function switchType(type) {
         currentType = type;
         document.querySelectorAll('.toggle-option').forEach(option => {
@@ -51,23 +75,39 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!url) return false;
         if (url.startsWith('blob:')) return false;
         if (url.startsWith('data:')) return false;
+        if (url.startsWith('chrome://')) return false;
+        if (url.startsWith('chrome-extension://')) return false;
         return url.startsWith('http://') || url.startsWith('https://');
-    }
-
-    function isRecentDownload(timestamp, maxDaysOld = 30) {
-        if (!timestamp) return false;
-        const now = new Date();
-        const downloadDate = new Date(timestamp);
-        if (isNaN(downloadDate.getTime())) return false;
-        if (downloadDate > now) return false;
-        const daysDiff = (now - downloadDate) / (1000 * 60 * 60 * 24);
-        return daysDiff <= maxDaysOld;
     }
 
     function hasValidFileInfo(item) {
         const hasFilename = item.filename || item.filepath || item.name;
         const hasSize = item.size || item.fileSize || item.totalBytes;
         return hasFilename && hasSize;
+    }
+
+    // FIXED: Better timestamp validation with extension install date
+    function validateTimestamp(timestamp) {
+        if (!timestamp) return null;
+        
+        const date = new Date(timestamp);
+        if (isNaN(date.getTime())) return null;
+        
+        const now = new Date();
+        const oneDayFuture = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+        
+        // Check if download is before extension was installed
+        if (extensionInstallDate && date.getTime() < extensionInstallDate) {
+            console.log(`Filtering pre-extension download: ${date} < ${new Date(extensionInstallDate)}`);
+            return null;
+        }
+        
+        // Don't allow future dates
+        if (date > oneDayFuture) {
+            return null;
+        }
+        
+        return timestamp;
     }
 
     async function loadData() {
@@ -90,25 +130,17 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (data.fileDownloads) allItems = allItems.concat(data.fileDownloads);
             if (data.smartshotHistory) allItems = allItems.concat(data.smartshotHistory);
 
-            allItems = removeDuplicates(allItems);
+            // FIXED: Remove duplicates with better logic
+            allItems = removeDuplicatesAdvanced(allItems);
 
             allData.screenshots = allItems.filter(item => {
                 if (!hasValidFileInfo(item)) return false;
                 
-                let fname = '';
-                if (item.filepath) {
-                    fname = item.filepath.split(/[\\/]/).pop();
-                } else if (item.filename) {
-                    fname = item.filename.split(/[\\/]/).pop();
-                } else {
-                    fname = item.filename || '';
-                }
-                fname = fname.toLowerCase();
-
+                const filename = extractCleanFilename(item);
                 const isScreenshot = (
-                    fname.includes('screenshot') ||
-                    fname.includes('capture') ||
-                    fname.includes('screen') ||
+                    filename.includes('screenshot') ||
+                    filename.includes('capture') ||
+                    filename.includes('screen') ||
                     (item.url && item.url.startsWith('data:image/')) ||
                     (item.filepath && (
                         item.filepath.toLowerCase().includes('screenshot') ||
@@ -117,79 +149,44 @@ document.addEventListener("DOMContentLoaded", async () => {
                     ))
                 );
 
-                return isScreenshot && (item.size || item.fileSize || item.totalBytes);
+                return isScreenshot;
             });
 
             allData.downloads = allItems.filter(item => {
                 if (!hasValidFileInfo(item)) return false;
                 
-                let fname = '';
-                if (item.filepath) {
-                    fname = item.filepath.split(/[\\/]/).pop();
-                } else if (item.filename) {
-                    fname = item.filename.split(/[\\/]/).pop();
-                } else {
-                    fname = item.filename || '';
-                }
-                fname = fname.toLowerCase();
-
+                const filename = extractCleanFilename(item);
                 const isScreenshot = (
-                    fname.includes('screenshot') ||
-                    fname.includes('capture') ||
-                    fname.includes('screen') ||
-                    (item.url && item.url.startsWith('data:image/')) ||
-                    (item.filepath && (
-                        item.filepath.toLowerCase().includes('screenshot') ||
-                        item.filepath.toLowerCase().includes('screen') ||
-                        item.filepath.toLowerCase().includes('capture')
-                    ))
+                    filename.includes('screenshot') ||
+                    filename.includes('capture') ||
+                    filename.includes('screen') ||
+                    (item.url && item.url.startsWith('data:image/'))
                 );
 
-                if (isScreenshot) return false;
-
-                const hasValidUrl = isValidDownloadUrl(item.downloadUrl) || isValidDownloadUrl(item.url);
-                const isRecent = isRecentDownload(item.timestamp || item.dateCreated || item.downloadTime);
-                
-                if (!hasValidUrl) {
-                    return isRecentDownload(item.timestamp || item.dateCreated || item.downloadTime, 7);
-                }
-
-                return true;
+                return !isScreenshot;
             });
 
+            // FIXED: Apply timestamp validation and filter invalid entries
             allData.downloads = allData.downloads.filter(item => {
-                const timestamp = item.timestamp || item.dateCreated || item.downloadTime;
+                const originalTimestamp = item.timestamp || item.dateCreated || item.downloadTime;
+                const validTimestamp = validateTimestamp(originalTimestamp);
                 
-                if (timestamp) {
-                    const downloadDate = new Date(timestamp);
-                    const now = new Date();
-                    if (downloadDate > now) return false;
-                    const yearAgo = new Date();
-                    yearAgo.setFullYear(yearAgo.getFullYear() - 1);
-                    if (downloadDate < yearAgo) return false;
-                }
-
-                let fname = '';
-                if (item.filepath) {
-                    fname = item.filepath.split(/[\\/]/).pop();
-                } else if (item.filename) {
-                    fname = item.filename.split(/[\\/]/).pop();
-                } else {
-                    fname = item.filename || '';
-                }
-
-                const filenameMatch = fname.match(/20\d{2}/);
-                if (filenameMatch && timestamp) {
-                    const filenameYear = parseInt(filenameMatch[0]);
-                    const timestampYear = new Date(timestamp).getFullYear();
-                    if (Math.abs(filenameYear - timestampYear) > 1) {
-                        return false;
-                    }
-                }
-
+                if (!validTimestamp) return false;
+                
+                item.validatedTimestamp = validTimestamp;
                 return true;
             });
 
+            allData.screenshots = allData.screenshots.filter(item => {
+                const originalTimestamp = item.timestamp || item.dateCreated || item.downloadTime;
+                const validTimestamp = validateTimestamp(originalTimestamp);
+                
+                if (!validTimestamp) return false;
+                item.validatedTimestamp = validTimestamp;
+                return true;
+            });
+
+            // Generate unique IDs
             allData.screenshots.forEach((item, index) => {
                 if (!item.id) {
                     item.id = `screenshot_${generateItemId(item, index)}`;
@@ -202,15 +199,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
             });
 
+            // Sort by validated timestamp
             allData.screenshots.sort((a, b) => {
-                const timeA = new Date(a.timestamp || a.dateCreated || a.downloadTime || 0);
-                const timeB = new Date(b.timestamp || b.dateCreated || b.downloadTime || 0);
+                const timeA = new Date(a.validatedTimestamp);
+                const timeB = new Date(b.validatedTimestamp);
                 return timeB - timeA;
             });
 
             allData.downloads.sort((a, b) => {
-                const timeA = new Date(a.timestamp || a.dateCreated || a.downloadTime || 0);
-                const timeB = new Date(b.timestamp || b.dateCreated || b.downloadTime || 0);
+                const timeA = new Date(a.validatedTimestamp);
+                const timeB = new Date(b.validatedTimestamp);
                 return timeB - timeA;
             });
 
@@ -223,20 +221,73 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    function generateItemId(item, index) {
-        let fname = '';
+    // NEW: Extract clean filename helper
+    function extractCleanFilename(item) {
+        let filename = '';
         if (item.filepath) {
-            fname = item.filepath.split(/[\\/]/).pop();
+            filename = item.filepath.split(/[\\/]/).pop();
         } else if (item.filename) {
-            fname = item.filename.split(/[\\/]/).pop();
+            filename = item.filename.split(/[\\/]/).pop();
         } else {
-            fname = item.filename || '';
+            filename = item.filename || item.name || '';
         }
+        return filename.toLowerCase();
+    }
+
+    // FIXED: Advanced duplicate removal
+    function removeDuplicatesAdvanced(items) {
+        const duplicateGroups = new Map();
         
-        const timestamp = item.timestamp || item.dateCreated || item.downloadTime || Date.now();
+        // Group items by filename and size
+        items.forEach((item, index) => {
+            const filename = extractCleanFilename(item);
+            const size = item.size || item.fileSize || item.totalBytes || 0;
+            const key = `${filename}-${size}`;
+            
+            if (!duplicateGroups.has(key)) {
+                duplicateGroups.set(key, []);
+            }
+            duplicateGroups.get(key).push({...item, originalIndex: index});
+        });
+        
+        const filteredItems = [];
+        
+        duplicateGroups.forEach((group, key) => {
+            if (group.length === 1) {
+                filteredItems.push(group[0]);
+            } else {
+                // For duplicates, keep the one with most recent valid timestamp
+                const validItems = group.filter(item => {
+                    const timestamp = item.timestamp || item.dateCreated || item.downloadTime;
+                    return validateTimestamp(timestamp) !== null;
+                });
+                
+                if (validItems.length === 0) {
+                    // If no valid timestamps, skip all
+                    return;
+                }
+                
+                // Sort by timestamp and keep most recent
+                const sortedItems = validItems.sort((a, b) => {
+                    const timeA = new Date(a.timestamp || a.dateCreated || a.downloadTime);
+                    const timeB = new Date(b.timestamp || b.dateCreated || b.downloadTime);
+                    return timeB - timeA;
+                });
+                
+                filteredItems.push(sortedItems[0]);
+                console.log(`Removed ${group.length - 1} duplicate(s) of: ${key}`);
+            }
+        });
+        
+        return filteredItems;
+    }
+
+    function generateItemId(item, index) {
+        const filename = extractCleanFilename(item);
+        const timestamp = item.validatedTimestamp || item.timestamp || item.dateCreated || item.downloadTime || Date.now();
         const size = item.size || item.fileSize || item.totalBytes || 0;
         
-        return `${fname.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}_${size}_${index}`.substring(0, 50);
+        return `${filename.replace(/[^a-zA-Z0-9]/g, '_')}_${timestamp}_${size}_${index}`.substring(0, 50);
     }
 
     async function loadStickyNotes() {
@@ -355,32 +406,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    function removeDuplicates(items) {
-        const seen = new Set();
-        return items.filter(item => {
-            let fname = '';
-            if (item.filepath) {
-                fname = item.filepath.split(/[\\/]/).pop();
-            } else if (item.filename) {
-                fname = item.filename.split(/[\\/]/).pop();
-            } else {
-                fname = item.filename || '';
-            }
-            let key;
-            if (fname.toLowerCase().includes('screenshot')) {
-                key = `ss-${fname.replace(/\.[^/.]+$/, "")}-${item.timestamp || ''}`;
-            } else {
-                const size = item.size || item.fileSize || item.totalBytes || 0;
-                const timestamp = item.timestamp || item.dateCreated || item.downloadTime || '';
-                const url = item.downloadUrl || item.url || '';
-                key = `${fname}-${size}-${timestamp}-${url.substring(0, 50)}`;
-            }
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
-        });
-    }
-
     function showLoading() {
         list.innerHTML = `
             <div class="loading-spinner">
@@ -403,21 +428,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         list.innerHTML = data.map(item => {
-            let displayFilename = '';
-            if (item.filepath) {
-                displayFilename = item.filepath.split(/[\\/]/).pop();
-            } else if (item.filename) {
-                displayFilename = item.filename.split(/[\\/]/).pop();
-            } else {
-                displayFilename = item.filename || item.name || "Untitled";
-            }
-
-            if (currentType === 'screenshots') {
-                displayFilename = displayFilename
-                    .replace(/^screenshot_/, '')
-                    .replace(/_{2,}/g, '_')
-                    .replace(/(_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)?(\.png)?$/i, '.png');
-            }
+            // FIXED: Better filename display logic
+            let displayFilename = getDisplayFilename(item);
 
             let fileSize = 'Unknown size';
             if (item.size) fileSize = typeof item.size === 'number' ? formatFileSize(item.size) : item.size;
@@ -428,7 +440,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const fileType = getFileType(fileExtension);
             const dimensions = item.dimensions || item.resolution || null;
 
-            const timestamp = item.timestamp || item.dateCreated || item.downloadTime;
+            const timestamp = item.validatedTimestamp;
             const dateStr = formatDate(timestamp);
             const timeStr = formatTime(timestamp);
 
@@ -515,8 +527,38 @@ document.addEventListener("DOMContentLoaded", async () => {
         setTimeout(() => initializeStickyNoteListeners(), 100);
     }
 
+    // NEW: Better filename display logic
+    function getDisplayFilename(item) {
+        if (currentType === 'downloads') {
+            // Priority: filename > suggestedFilename > name > filepath basename
+            return item.filename || 
+                   item.suggestedFilename || 
+                   item.name || 
+                   (item.filepath ? item.filepath.split(/[\\/]/).pop() : '') || 
+                   "Untitled";
+        } else {
+            // For screenshots
+            let filename = '';
+            if (item.filepath) {
+                filename = item.filepath.split(/[\\/]/).pop();
+            } else if (item.filename) {
+                filename = item.filename.split(/[\\/]/).pop();
+            } else {
+                filename = item.filename || item.name || "Untitled";
+            }
+            
+            // Clean up screenshot filename
+            return filename
+                .replace(/^screenshot_/, '')
+                .replace(/_{2,}/g, '_')
+                .replace(/(_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)?(\.png)?$/i, '.png');
+        }
+    }
+
+    // FIXED: Better URL section with accurate URL detection
     function generateUrlSection(item) {
         let urlSection = '';
+        
         if (currentType === 'screenshots') {
             if (item.url && item.url.startsWith('data:')) {
                 const dataType = item.url.substring(5, item.url.indexOf(';')) || 'image';
@@ -532,17 +574,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                     </div>
                 `;
             }
-            if (item.tabUrl || item.pageUrl || item.sourceUrl || item.referrer) {
-                const sourceUrl = item.tabUrl || item.pageUrl || item.sourceUrl || item.referrer;
-                if (isValidDownloadUrl(sourceUrl)) {
-                    urlSection += `
-                        <div class="item-url">
-                            <strong>Source Page:</strong> <a href="${sourceUrl}" target="_blank">${shortenUrl(sourceUrl)}</a>
-                        </div>
-                    `;
-                }
+            
+            const sourceUrl = item.tabUrl || item.pageUrl || item.sourceUrl || item.referrer;
+            if (sourceUrl && isValidDownloadUrl(sourceUrl)) {
+                urlSection += `
+                    <div class="item-url">
+                        <strong>Source Page:</strong> <a href="${sourceUrl}" target="_blank">${shortenUrl(sourceUrl)}</a>
+                    </div>
+                `;
             }
-            if (item.originalUrl && !item.originalUrl.startsWith('data:') && item.originalUrl !== item.url && isValidDownloadUrl(item.originalUrl)) {
+            
+            if (item.originalUrl && !item.originalUrl.startsWith('data:') && 
+                item.originalUrl !== item.url && isValidDownloadUrl(item.originalUrl)) {
                 urlSection += `
                     <div class="item-url">
                         <strong>Image URL:</strong> <a href="${item.originalUrl}" target="_blank">${shortenUrl(item.originalUrl)}</a>
@@ -550,31 +593,38 @@ document.addEventListener("DOMContentLoaded", async () => {
                 `;
             }
         }
+        
         if (currentType === 'downloads') {
-            if (item.downloadUrl && isValidDownloadUrl(item.downloadUrl)) {
+            // FIXED: Better download URL detection and display
+            const downloadUrl = item.url || item.downloadUrl || item.finalUrl;
+            
+            if (downloadUrl && isValidDownloadUrl(downloadUrl)) {
+                // Check if URL is still accessible (basic check)
                 urlSection += `
                     <div class="item-url">
-                        <strong>Download URL:</strong> <a href="${item.downloadUrl}" target="_blank">${shortenUrl(item.downloadUrl)}</a>
+                        <strong>Download URL:</strong> <a href="${downloadUrl}" target="_blank">${shortenUrl(downloadUrl)}</a>
                     </div>
                 `;
-            } else if (!isValidDownloadUrl(item.downloadUrl) && item.downloadUrl) {
+            } else if (downloadUrl) {
+                // We have a URL but it's not valid (blob, data, etc.)
                 urlSection += `
                     <div class="item-url">
                         <strong>Download URL:</strong> <span style="color: #9ca3af;">[URL no longer accessible]</span>
                     </div>
                 `;
             }
-            if (item.tabUrl || item.pageUrl || item.sourceUrl || item.referrer) {
-                const sourceUrl = item.tabUrl || item.pageUrl || item.sourceUrl || item.referrer;
-                if (isValidDownloadUrl(sourceUrl)) {
-                    urlSection += `
-                        <div class="item-url">
-                            <strong>Source Page:</strong> <a href="${sourceUrl}" target="_blank">${shortenUrl(sourceUrl)}</a>
-                        </div>
-                    `;
-                }
+            
+            // FIXED: Better source URL logic
+            const sourceUrl = item.referrer || item.tabUrl || item.pageUrl || item.sourceUrl;
+            if (sourceUrl && isValidDownloadUrl(sourceUrl) && sourceUrl !== downloadUrl) {
+                urlSection += `
+                    <div class="item-url">
+                        <strong>Source Page:</strong> <a href="${sourceUrl}" target="_blank">${shortenUrl(sourceUrl)}</a>
+                    </div>
+                `;
             }
         }
+        
         return urlSection;
     }
 
@@ -611,24 +661,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         const filtered = data.filter(item => {
-            let displayFilename = '';
-            if (item.filepath) {
-                displayFilename = item.filepath.split(/[\\/]/).pop();
-            } else if (item.filename) {
-                displayFilename = item.filename.split(/[\\/]/).pop();
-            } else {
-                displayFilename = item.filename || item.name || "Untitled";
-            }
-
-            if (currentType === 'screenshots') {
-                displayFilename = displayFilename.replace(/(_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)?(\.png)?$/i, '').replace(/^screenshot_/, '');
-            }
-
+            const displayFilename = getDisplayFilename(item);
             const noteText = stickyNotes[item.id] || '';
+            const searchTimestamp = item.validatedTimestamp;
 
             if (filterByValue === 'all') {
                 return (displayFilename || '').toLowerCase().includes(query) ||
                     (item.name || '').toLowerCase().includes(query) ||
+                    (item.suggestedFilename || '').toLowerCase().includes(query) ||
                     (item.url || '').toLowerCase().includes(query) ||
                     (item.tabUrl || '').toLowerCase().includes(query) ||
                     (item.pageUrl || '').toLowerCase().includes(query) ||
@@ -637,11 +677,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                     (item.referrer || '').toLowerCase().includes(query) ||
                     (item.filepath || '').toLowerCase().includes(query) ||
                     noteText.toLowerCase().includes(query) ||
-                    formatDate(item.timestamp || item.dateCreated || item.downloadTime).toLowerCase().includes(query) ||
-                    formatTime(item.timestamp || item.dateCreated || item.downloadTime).toLowerCase().includes(query);
+                    formatDate(searchTimestamp).toLowerCase().includes(query) ||
+                    formatTime(searchTimestamp).toLowerCase().includes(query);
             } else if (filterByValue === 'filename') {
                 return (displayFilename || '').toLowerCase().includes(query) ||
-                    (item.name || '').toLowerCase().includes(query);
+                    (item.name || '').toLowerCase().includes(query) ||
+                    (item.suggestedFilename || '').toLowerCase().includes(query);
             } else if (filterByValue === 'url') {
                 return (item.url || '').toLowerCase().includes(query) ||
                     (item.tabUrl || '').toLowerCase().includes(query) ||
@@ -650,8 +691,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                     (item.downloadUrl || '').toLowerCase().includes(query) ||
                     (item.referrer || '').toLowerCase().includes(query);
             } else if (filterByValue === 'timestamp') {
-                return formatDate(item.timestamp || item.dateCreated || item.downloadTime).toLowerCase().includes(query) ||
-                    formatTime(item.timestamp || item.dateCreated || item.downloadTime).toLowerCase().includes(query);
+                return formatDate(searchTimestamp).toLowerCase().includes(query) ||
+                    formatTime(searchTimestamp).toLowerCase().includes(query);
             }
             return false;
         });
@@ -671,13 +712,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
 
         const todayItems = data.filter(item => {
-            const timestamp = item.timestamp || item.dateCreated || item.downloadTime;
+            const timestamp = item.validatedTimestamp;
             if (!timestamp) return false;
             return new Date(timestamp) >= today;
         }).length;
 
         const weekItems = data.filter(item => {
-            const timestamp = item.timestamp || item.dateCreated || item.downloadTime;
+            const timestamp = item.validatedTimestamp;
             if (!timestamp) return false;
             return new Date(timestamp) >= weekAgo;
         }).length;
@@ -685,28 +726,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         totalCount.textContent = data.length;
         todayCount.textContent = todayItems;
         weekCount.textContent = weekItems;
-    }
-
-    function formatTimestamp(timestamp) {
-        if (!timestamp) return 'Unknown date';
-        const date = new Date(timestamp);
-        if (isNaN(date.getTime())) return 'Invalid date';
-        const now = new Date();
-        const diffMs = now - date;
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
-
-        if (diffMins < 1) return 'Just now';
-        if (diffMins < 60) return `${diffMins}m ago`;
-        if (diffHours < 24) return `${diffHours}h ago`;
-        if (diffDays < 7) return `${diffDays}d ago`;
-
-        return date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-        });
     }
 
     function shortenUrl(url) {
@@ -746,7 +765,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             'mp4': 'MP4 Video',
             'avi': 'AVI Video',
             'mp3': 'MP3 Audio',
-            'wav': 'WAV Audio'
+            'wav': 'WAV Audio',
+            'exe': 'Executable File',
+            'msi': 'Windows Installer'
         };
         return types[extension] || (extension ? extension.toUpperCase() + ' File' : '');
     }
@@ -772,38 +793,61 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
     }
 
+    // NEW: Clean up old/invalid storage data
     async function cleanupStorageData() {
         try {
             const data = await new Promise(resolve => {
                 chrome.storage.local.get({
-                    downloadHistory: []
+                    downloadHistory: [],
+                    downloads: [],
+                    fileDownloads: [],
+                    smartshotHistory: []
                 }, resolve);
             });
 
-            let cleanedHistory = data.downloadHistory.filter(item => {
-                const timestamp = item.timestamp || item.dateCreated || item.downloadTime;
-                if (timestamp) {
-                    const date = new Date(timestamp);
-                    const now = new Date();
-                    if (date > now || date < new Date(now.getTime() - 2 * 365 * 24 * 60 * 60 * 1000)) {
-                        return false;
+            let needsUpdate = false;
+            const cleanedData = {};
+
+            // Clean each storage array
+            ['downloadHistory', 'downloads', 'fileDownloads', 'smartshotHistory'].forEach(key => {
+                if (data[key]) {
+                    const originalLength = data[key].length;
+                    
+                    const cleaned = data[key].filter(item => {
+                        // Remove items without valid file info
+                        if (!hasValidFileInfo(item)) return false;
+                        
+                        // Remove items with invalid timestamps (pre-extension)
+                        const timestamp = item.timestamp || item.dateCreated || item.downloadTime;
+                        if (!validateTimestamp(timestamp)) return false;
+                        
+                        return true;
+                    });
+                    
+                    cleanedData[key] = cleaned;
+                    
+                    if (cleaned.length !== originalLength) {
+                        needsUpdate = true;
+                        console.log(`Cleaned ${key}: ${originalLength} -> ${cleaned.length} items`);
                     }
                 }
-                return hasValidFileInfo(item);
             });
 
-            if (cleanedHistory.length !== data.downloadHistory.length) {
+            if (needsUpdate) {
                 await new Promise(resolve => {
-                    chrome.storage.local.set({ downloadHistory: cleanedHistory }, resolve);
+                    chrome.storage.local.set(cleanedData, resolve);
                 });
+                console.log('Storage cleanup completed');
             }
         } catch (error) {
             console.error('Error cleaning up storage data:', error);
         }
     }
 
+    // Run cleanup on load
     cleanupStorageData();
 
+    // Listen for storage changes
     if (chrome && chrome.storage && chrome.storage.onChanged) {
         chrome.storage.onChanged.addListener((changes, areaName) => {
             if (areaName === 'local' && (
@@ -823,6 +867,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
+    // Listen for download completion
     if (chrome && chrome.downloads && chrome.downloads.onChanged) {
         chrome.downloads.onChanged.addListener(downloadDelta => {
             if (downloadDelta.state && downloadDelta.state.current === 'complete') {
