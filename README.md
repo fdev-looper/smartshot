@@ -19,7 +19,7 @@
 ![Version](https://img.shields.io/badge/Version-1.0.0-0d9488?style=for-the-badge)
 ![Storage](https://img.shields.io/badge/Storage-100%25%20Local-22c55e?style=for-the-badge&logo=databricks&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge)
-![GitHub stars](https://img.shields.io/github/stars/yourusername/smartshot?style=for-the-badge&color=f59e0b)
+![GitHub stars](https://img.shields.io/github/stars/fdev-looper/smartshot?style=for-the-badge&color=f59e0b)
 
 <br/>
 
@@ -98,7 +98,7 @@ No cloud. No account. No tracking. Everything is stored locally in your browser 
 
 **Option A: Clone with Git**
 ```bash
-git clone https://github.com/yourusername/smartshot.git
+git clone https://github.com/fdev-looper/smartshot.git
 ```
 
 **Option B: Download ZIP**
@@ -320,7 +320,7 @@ The extension requests these permissions:
 Contributions are welcome! Here's how to get started:
 
 1. **Fork** this repository
-2. **Clone** your fork: `git clone https://github.com/yourusername/smartshot.git`
+2. **Clone** your fork: `git clone https://github.com/fdev-looper/smartshot.git`
 3. **Make changes** — the codebase is plain HTML/CSS/JS, no build step needed
 4. **Load unpacked** in Chrome to test (see Installation above)
 5. **Open a Pull Request** with a clear description of what you changed and why
